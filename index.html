@@ -29,6 +29,10 @@
             padding: 0 20px;
             flex-shrink: 0;
             box-sizing: border-box;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000; /* Garante que a navbar esteja sempre visível */
         }
 
         .navbar .logo {
@@ -59,9 +63,8 @@
         .main-content {
             flex: 1;
             overflow-y: auto;
-            padding: 20px;
+            padding: 80px 20px 60px; /* Adiciona espaço para a navbar e a caixa de postagem */
             box-sizing: border-box;
-            padding-bottom: 60px; /* Para evitar sobreposição com a caixa de postagem */
         }
 
         .post-feed {
@@ -192,6 +195,25 @@
             z-index: 1000;
         }
 
+        .back-to-top-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: black;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 50%;
+            font-size: 18px;
+            cursor: pointer;
+            display: none; /* Inicialmente escondido */
+            z-index: 1000;
+        }
+
+        .back-to-top-button i {
+            font-size: 18px;
+        }
+
         /* Responsiveness */
         @media (max-width: 768px) {
             .navbar {
@@ -208,15 +230,19 @@
             }
 
             .main-content {
-                padding: 10px;
+                padding: 90px 10px 70px; /* Ajusta o padding para o celular */
             }
 
             .post-box-container {
-                bottom: 70px;
+                bottom: 80px;
             }
 
             .floating-button {
-                bottom: 80px;
+                bottom: 90px;
+            }
+
+            .back-to-top-button {
+                bottom: 70px;
             }
         }
 
@@ -238,7 +264,7 @@
             }
 
             .main-content {
-                padding: 5px;
+                padding: 80px 5px 70px; /* Ajusta o padding para telas menores */
             }
 
             .post-box textarea {
@@ -254,6 +280,10 @@
             .floating-button {
                 padding: 10px;
                 font-size: 20px;
+            }
+
+            .back-to-top-button {
+                bottom: 50px;
             }
         }
     </style>
@@ -295,59 +325,60 @@
         <i class="fas fa-pencil-alt"></i>
     </button>
 
+    <!-- Botão "voltar ao topo" -->
+    <button class="back-to-top-button" onclick="scrollToTop()">
+        <i class="fas fa-chevron-up"></i>
+    </button>
+
     <div class="footer">
-        <p>&copy; 2024 FreeFlow. Todos os direitos reservados.</p>
+        <p>&copy; 2024 FreeFlow</p>
     </div>
 
     <script>
         function togglePostBox() {
-            var postBoxContainer = document.getElementById('postBoxContainer');
-            if (postBoxContainer.style.display === 'none' || postBoxContainer.style.display === '') {
-                postBoxContainer.style.display = 'block';
-            } else {
-                postBoxContainer.style.display = 'none';
-            }
+            const postBoxContainer = document.getElementById('postBoxContainer');
+            postBoxContainer.style.display = postBoxContainer.style.display === 'block' ? 'none' : 'block';
         }
 
         function addPost() {
-            var postContent = document.getElementById('postContent').value;
-            var postImage = document.getElementById('postImage').files[0];
-            var postFeed = document.getElementById('postFeed');
+            const postContent = document.getElementById('postContent').value;
+            const postImage = document.getElementById('postImage').files[0];
+            const postFeed = document.getElementById('postFeed');
 
             if (postContent.trim() === '' && !postImage) {
-                alert('Por favor, insira algum texto ou selecione uma imagem.');
+                alert('Por favor, adicione algum conteúdo ao post ou selecione uma imagem.');
                 return;
             }
 
-            var postDiv = document.createElement('div');
+            const postDiv = document.createElement('div');
             postDiv.className = 'post';
 
-            if (postContent) {
-                var postText = document.createElement('p');
+            if (postContent.trim() !== '') {
+                const postText = document.createElement('p');
                 postText.textContent = postContent;
                 postDiv.appendChild(postText);
             }
 
             if (postImage) {
-                var postImageElement = document.createElement('img');
+                const postImageElement = document.createElement('img');
                 postImageElement.src = URL.createObjectURL(postImage);
                 postImageElement.style.maxWidth = '100%';
                 postImageElement.style.marginTop = '10px';
                 postDiv.appendChild(postImageElement);
             }
 
-            var postActions = document.createElement('div');
+            const postActions = document.createElement('div');
             postActions.className = 'post-actions';
 
-            var likeButton = document.createElement('button');
+            const likeButton = document.createElement('button');
             likeButton.innerText = 'Aplaudir';
             postActions.appendChild(likeButton);
 
-            var commentButton = document.createElement('button');
+            const commentButton = document.createElement('button');
             commentButton.innerText = 'Expressar';
             postActions.appendChild(commentButton);
 
-            var pinButton = document.createElement('button');
+            const pinButton = document.createElement('button');
             pinButton.innerText = 'Tornar memorável';
             pinButton.onclick = function() {
                 postFeed.insertBefore(postDiv, postFeed.firstChild);
@@ -362,6 +393,20 @@
             document.getElementById('postImage').value = '';
 
             togglePostBox(); // Esconde a caixa de postagem após a publicação
+        }
+
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Mostrar o botão "voltar ao topo" quando o usuário rolar para baixo
+        window.onscroll = function() {
+            const backToTopButton = document.querySelector('.back-to-top-button');
+            if (document.documentElement.scrollTop > 100) {
+                backToTopButton.style.display = 'block';
+            } else {
+                backToTopButton.style.display = 'none';
+            }
         }
     </script>
 </body>
