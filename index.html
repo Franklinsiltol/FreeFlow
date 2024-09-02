@@ -1,413 +1,512 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FreeFlow</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: white;
-            color: black;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            overflow: hidden;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FreeFlow</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    /* Estilos globais */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f4;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
 
-        .navbar {
-            width: 100%;
-            height: 60px;
-            background-color: white;
-            border-bottom: 5px solid black;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 20px;
-            flex-shrink: 0;
-            box-sizing: border-box;
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: 1000; /* Garante que a navbar esteja sempre visível */
-        }
+    /* Barra de navegação superior */
+    #navbar {
+      width: 100%;
+      background-color: #fff;
+      padding: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: fixed;
+      top: 0;
+      z-index: 1000;
+      border-bottom: 2px solid #ddd;
+    }
 
-        .navbar .logo {
-            font-size: 24px;
-            font-weight: bold;
-            color: black;
-        }
+    #navbar .logo {
+      color: #000;
+      font-size: 24px;
+      font-weight: bold;
+    }
 
-        .search-bar input[type="text"] {
-            width: 200px;
-            padding: 5px;
-            border: 2px solid black;
-            border-radius: 4px;
-        }
+    #navbar .search-bar {
+      flex: 1;
+      margin: 0 20px;
+      position: relative;
+    }
 
-        .navbar .sidebar {
-            display: flex;
-            align-items: center;
-        }
+    #navbar .search-bar input {
+      width: 100%;
+      padding: 10px;
+      border: 2px solid #000;
+      border-radius: 20px;
+      font-size: 16px;
+      background-color: #fff;
+      color: #000;
+    }
 
-        .navbar .sidebar a {
-            color: black;
-            text-decoration: none;
-            margin: 0 10px;
-            font-size: 24px;
-        }
+    #navbar .menu-icons {
+      display: flex;
+      align-items: center;
+    }
 
-        .main-content {
-            flex: 1;
-            overflow-y: auto;
-            padding: 80px 20px 60px; /* Adiciona espaço para a navbar e a caixa de postagem */
-            box-sizing: border-box;
-        }
+    #navbar .menu-icons i {
+      font-size: 20px;
+      margin-left: 20px;
+      color: #000;
+      cursor: pointer;
+      transition: color 0.3s;
+    }
 
-        .post-feed {
-            width: 100%;
-            max-width: 800px;
-            margin: 0 auto;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
+    #navbar .menu-icons i:hover {
+      color: #555;
+    }
 
-        .post {
-            width: 100%;
-            max-width: 800px;
-            border: 3px solid black;
-            padding: 20px;
-            margin-bottom: 20px;
-            background-color: white;
-        }
+    /* Área do feed */
+    #feed {
+      width: 100%;
+      max-width: 600px;
+      margin-top: 70px;
+    }
 
-        .post-actions {
-            margin-top: 10px;
-        }
+    .post {
+      border: 2px solid #ddd;
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 15px;
+      background-color: #fff;
+      position: relative;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
 
-        .post-actions button {
-            margin-right: 10px;
-            padding: 5px 10px;
-            border: 2px solid black;
-            background-color: white;
-            color: black;
-            cursor: pointer;
-        }
+    .post .post-content {
+      margin-bottom: 10px;
+    }
 
-        .post-actions button:hover {
-            background-color: black;
-            color: white;
-        }
+    .post .post-image {
+      max-width: 100%;
+      margin-bottom: 10px;
+      border-radius: 8px;
+    }
 
-        .post-box-container {
-            width: 100%;
-            max-width: 800px;
-            margin: 0 auto;
-            position: fixed;
-            bottom: 60px;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: white;
-            border-top: 5px solid black;
-            padding: 10px;
-            box-sizing: border-box;
-            display: none; /* Inicialmente escondido */
-            z-index: 1000; /* Certifica que a caixa de postagem esteja sobre os posts */
-        }
+    .post .actions {
+      display: flex;
+      justify-content: space-around;
+      border-top: 1px solid #ddd;
+      padding-top: 5px;
+    }
 
-        .post-box {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            background-color: white;
-        }
+    .post .actions button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #000;
+      font-weight: bold;
+      font-size: 14px;
+      transition: color 0.3s;
+    }
 
-        .post-box textarea {
-            width: calc(100% - 20px);
-            padding: 10px;
-            font-size: 16px;
-            border: 2px solid black;
-            margin-bottom: 10px;
-            resize: none;
-        }
+    .post .actions button:hover {
+      color: #555;
+    }
 
-        .post-box .upload-icon {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
-            cursor: pointer;
-        }
+    .post .countdown {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-size: 12px;
+      color: #888;
+    }
 
-        .post-box .upload-icon i {
-            font-size: 24px;
-            color: black;
-            margin-right: 10px;
-        }
+    /* Modal de Comentários */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0, 0, 0, 0.4);
+    }
 
-        .post-box input[type="file"] {
-            display: none;
-        }
+    .modal-content {
+      background-color: #fff;
+      margin: 15% auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 90%;
+      max-width: 600px;
+      position: relative;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
 
-        .post-box button {
-            padding: 10px;
-            background-color: black;
-            color: white;
-            border: none;
-            font-size: 16px;
-            cursor: pointer;
-        }
+    .close {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      color: #aaa;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+    }
 
-        .footer {
-            width: 100%;
-            height: 50px;
-            background-color: white;
-            border-top: 5px solid black;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            flex-shrink: 0;
-            box-sizing: border-box;
-        }
+    .close:hover {
+      color: #000;
+    }
 
-        .footer p {
-            margin: 0;
-            font-size: 14px;
-        }
+    #comment-list {
+      max-height: 300px;
+      overflow-y: auto;
+      margin-bottom: 10px;
+      border: 1px solid #ddd;
+      padding: 10px;
+      border-radius: 8px;
+    }
 
-        .floating-button {
-            position: fixed;
-            bottom: 70px;
-            right: 20px;
-            background-color: black;
-            color: white;
-            border: none;
-            padding: 15px;
-            border-radius: 50%;
-            font-size: 24px;
-            cursor: pointer;
-            z-index: 1000;
-        }
+    #comment-input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
 
-        .back-to-top-button {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background-color: black;
-            color: white;
-            border: none;
-            padding: 10px;
-            border-radius: 50%;
-            font-size: 18px;
-            cursor: pointer;
-            display: none; /* Inicialmente escondido */
-            z-index: 1000;
-        }
+    /* Caixa de postagem */
+    #post-box {
+      display: none;
+      position: fixed;
+      bottom: 80px;
+      right: 20px;
+      width: 90%;
+      max-width: 400px;
+      background-color: #fff;
+      border: 2px solid #000;
+      border-radius: 12px;
+      padding: 15px;
+      z-index: 1000;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
 
-        .back-to-top-button i {
-            font-size: 18px;
-        }
+    #post-box textarea {
+      width: 100%;
+      height: 60px;
+      padding: 10px;
+      margin-bottom: 10px;
+      border: 1px solid #000;
+      border-radius: 8px;
+      font-size: 16px;
+      background-color: #fff;
+      color: #000;
+    }
 
-        /* Responsiveness */
-        @media (max-width: 768px) {
-            .navbar {
-                padding: 0 10px;
-            }
+    #post-box #post-image {
+      display: none;
+    }
 
-            .search-bar input[type="text"] {
-                width: 150px;
-            }
+    #post-box #preview-image {
+      display: none;
+      max-width: 100%;
+      margin-bottom: 10px;
+      border-radius: 8px;
+    }
 
-            .navbar .sidebar a {
-                margin: 0 5px;
-                font-size: 20px;
-            }
+    #post-box .icon-container {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
 
-            .main-content {
-                padding: 90px 10px 70px; /* Ajusta o padding para o celular */
-            }
+    #post-box .icon-container input[type="file"] {
+      display: none;
+    }
 
-            .post-box-container {
-                bottom: 80px;
-            }
+    #post-box .icon-container label {
+      cursor: pointer;
+      font-size: 24px;
+      color: #000;
+      transition: color 0.3s;
+    }
 
-            .floating-button {
-                bottom: 90px;
-            }
+    #post-box .icon-container label:hover {
+      color: #555;
+    }
 
-            .back-to-top-button {
-                bottom: 70px;
-            }
-        }
+    #post-box button {
+      background-color: #000;
+      color: #fff;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background-color 0.3s;
+    }
 
-        @media (max-width: 480px) {
-            .navbar {
-                height: 50px;
-            }
+    #post-box button:hover {
+      background-color: #555;
+    }
 
-            .navbar .logo {
-                font-size: 18px;
-            }
+    /* Botão flutuante para nova postagem */
+    #new-post-button {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background-color: #000;
+      color: #fff;
+      border: none;
+      padding: 15px;
+      border-radius: 50%;
+      font-size: 24px;
+      text-align: center;
+      cursor: pointer;
+      z-index: 1000;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      transition: background-color 0.3s, transform 0.3s;
+    }
 
-            .search-bar input[type="text"] {
-                width: 120px;
-            }
+    #new-post-button:hover {
+      background-color: #555;
+      transform: scale(1.1);
+    }
 
-            .navbar .sidebar a {
-                font-size: 18px;
-            }
+    /* Botão "Voltar ao topo" */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 80px;
+      right: 20px;
+      background-color: #000;
+      color: #fff;
+      border: none;
+      padding: 10px;
+      border-radius: 50%;
+      font-size: 16px;
+      cursor: pointer;
+      z-index: 1000;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      transition: background-color 0.3s, transform 0.3s;
+    }
 
-            .main-content {
-                padding: 80px 5px 70px; /* Ajusta o padding para telas menores */
-            }
-
-            .post-box textarea {
-                width: calc(100% - 14px);
-                font-size: 14px;
-            }
-
-            .post-box button {
-                padding: 8px;
-                font-size: 14px;
-            }
-
-            .floating-button {
-                padding: 10px;
-                font-size: 20px;
-            }
-
-            .back-to-top-button {
-                bottom: 50px;
-            }
-        }
-    </style>
+    #back-to-top:hover {
+      background-color: #555;
+      transform: scale(1.1);
+    }
+  </style>
 </head>
 <body>
-    <div class="navbar">
-        <div class="logo">FreeFlow</div>
-        <div class="search-bar">
-            <input type="text" placeholder="Buscar...">
-        </div>
-        <div class="sidebar">
-            <a href="#"><i class="fas fa-home"></i></a>
-            <a href="#"><i class="fas fa-user"></i></a>
-            <a href="#"><i class="fas fa-bell"></i></a>
-        </div>
+  <!-- Barra de navegação superior -->
+  <div id="navbar">
+    <div class="logo">FreeFlow</div>
+    <div class="search-bar">
+      <input type="text" placeholder="Buscar...">
     </div>
-
-    <div class="main-content">
-        <div class="post-feed" id="postFeed">
-            <!-- Posts adicionados dinamicamente aparecerão aqui -->
-        </div>
+    <div class="menu-icons">
+      <i class="fas fa-user-circle"></i>
+      <i class="fas fa-globe"></i>
+      <i class="fas fa-comments"></i>
     </div>
+  </div>
 
-    <!-- Caixa de postagem inicial escondida -->
-    <div class="post-box-container" id="postBoxContainer">
-        <div class="post-box">
-            <textarea id="postContent" placeholder="O que você está pensando?" rows="2"></textarea>
-            <label class="upload-icon" for="postImage">
-                <i class="fas fa-camera"></i> <!-- Ícone da câmera fotográfica -->
-                <span>Adicionar Foto</span>
-            </label>
-            <input type="file" id="postImage" accept="image/*">
-            <button onclick="addPost()">Publicar</button>
-        </div>
+  <!-- Área do feed -->
+  <div id="feed">
+    <!-- Exemplo de postagem -->
+    <div class="post">
+      <div class="post-content">Este é um exemplo de postagem!</div>
+      <div class="countdown">1h 23m 45s</div>
+      <img src="https://via.placeholder.com/600x400" alt="Imagem do post" class="post-image">
+      <div class="actions">
+        <button onclick="likePost(this)">Aplaudir</button>
+        <button onclick="openExpressModal()">Comentar</button>
+        <button onclick="moveToTop(this.parentElement.parentElement)">Mover para o topo</button>
+      </div>
     </div>
+    <!-- Adicione mais postagens aqui -->
+  </div>
 
-    <!-- Botão flutuante para abrir a caixa de postagem -->
-    <button class="floating-button" onclick="togglePostBox()">
-        <i class="fas fa-pencil-alt"></i>
-    </button>
-
-    <!-- Botão "voltar ao topo" -->
-    <button class="back-to-top-button" onclick="scrollToTop()">
-        <i class="fas fa-chevron-up"></i>
-    </button>
-
-    <div class="footer">
-        <p>&copy; 2024 FreeFlow</p>
+  <!-- Caixa de postagem -->
+  <div id="post-box">
+    <textarea placeholder="Escreva sua postagem..."></textarea>
+    <div class="icon-container">
+      <label for="post-image"><i class="fas fa-camera"></i></label>
+      <input type="file" id="post-image" accept="image/*">
+      <img id="preview-image" alt="Imagem de visualização">
     </div>
+    <button onclick="postContent()">Postar</button>
+  </div>
 
-    <script>
-        function togglePostBox() {
-            const postBoxContainer = document.getElementById('postBoxContainer');
-            postBoxContainer.style.display = postBoxContainer.style.display === 'block' ? 'none' : 'block';
+  <!-- Botão flutuante para nova postagem -->
+  <button id="new-post-button" onclick="togglePostBox()">+</button>
+
+  <!-- Botão "Voltar ao topo" -->
+  <button id="back-to-top" onclick="scrollToTop()">↑</button>
+
+  <!-- Modal de Comentários -->
+  <div id="comment-modal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeCommentModal()">&times;</span>
+      <h2>Comentários</h2>
+      <div id="comment-list">
+        <!-- Comentários serão adicionados aqui -->
+      </div>
+      <textarea id="comment-input" placeholder="Digite seu comentário..."></textarea>
+      <button id="send-comment-btn" onclick="addComment()">
+        <i class="fas fa-paper-plane"></i> Enviar
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // Função para abrir o modal de comentários
+    function openExpressModal() {
+      document.getElementById('comment-modal').style.display = 'block';
+    }
+
+    // Função para fechar o modal de comentários
+    function closeCommentModal() {
+      document.getElementById('comment-modal').style.display = 'none';
+    }
+
+    // Função para adicionar um comentário
+    function addComment() {
+      const commentInput = document.getElementById('comment-input');
+      const commentList = document.getElementById('comment-list');
+      const commentText = commentInput.value.trim();
+      if (commentText) {
+        const commentElement = document.createElement('div');
+        commentElement.textContent = commentText;
+        commentList.appendChild(commentElement);
+        commentInput.value = '';
+        commentList.scrollTop = commentList.scrollHeight; // Rolagem para o fim da lista
+      }
+    }
+
+    // Função para postar o conteúdo
+    function postContent() {
+      const textarea = document.querySelector('#post-box textarea');
+      const previewImage = document.getElementById('preview-image').src;
+      const postBox = document.getElementById('post-box');
+      const feed = document.getElementById('feed');
+
+      if (textarea.value.trim() || previewImage) {
+        const postDiv = document.createElement('div');
+        postDiv.className = 'post';
+
+        if (textarea.value.trim()) {
+          const postContent = document.createElement('div');
+          postContent.className = 'post-content';
+          postContent.textContent = textarea.value.trim();
+          postDiv.appendChild(postContent);
         }
 
-        function addPost() {
-            const postContent = document.getElementById('postContent').value;
-            const postImage = document.getElementById('postImage').files[0];
-            const postFeed = document.getElementById('postFeed');
-
-            if (postContent.trim() === '' && !postImage) {
-                alert('Por favor, adicione algum conteúdo ao post ou selecione uma imagem.');
-                return;
-            }
-
-            const postDiv = document.createElement('div');
-            postDiv.className = 'post';
-
-            if (postContent.trim() !== '') {
-                const postText = document.createElement('p');
-                postText.textContent = postContent;
-                postDiv.appendChild(postText);
-            }
-
-            if (postImage) {
-                const postImageElement = document.createElement('img');
-                postImageElement.src = URL.createObjectURL(postImage);
-                postImageElement.style.maxWidth = '100%';
-                postImageElement.style.marginTop = '10px';
-                postDiv.appendChild(postImageElement);
-            }
-
-            const postActions = document.createElement('div');
-            postActions.className = 'post-actions';
-
-            const likeButton = document.createElement('button');
-            likeButton.innerText = 'Aplaudir';
-            postActions.appendChild(likeButton);
-
-            const commentButton = document.createElement('button');
-            commentButton.innerText = 'Expressar';
-            postActions.appendChild(commentButton);
-
-            const pinButton = document.createElement('button');
-            pinButton.innerText = 'Tornar memorável';
-            pinButton.onclick = function() {
-                postFeed.insertBefore(postDiv, postFeed.firstChild);
-            };
-            postActions.appendChild(pinButton);
-
-            postDiv.appendChild(postActions);
-
-            postFeed.insertBefore(postDiv, postFeed.firstChild);
-
-            document.getElementById('postContent').value = '';
-            document.getElementById('postImage').value = '';
-
-            togglePostBox(); // Esconde a caixa de postagem após a publicação
+        if (previewImage) {
+          const postImage = document.createElement('img');
+          postImage.src = previewImage;
+          postImage.className = 'post-image';
+          postDiv.appendChild(postImage);
         }
 
-        function scrollToTop() {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
+        const countdownDiv = document.createElement('div');
+        countdownDiv.className = 'countdown';
+        countdownDiv.textContent = '24h 00m 00s'; // Contagem regressiva inicial de 24 horas
+        postDiv.appendChild(countdownDiv);
 
-        // Mostrar o botão "voltar ao topo" quando o usuário rolar para baixo
-        window.onscroll = function() {
-            const backToTopButton = document.querySelector('.back-to-top-button');
-            if (document.documentElement.scrollTop > 100) {
-                backToTopButton.style.display = 'block';
-            } else {
-                backToTopButton.style.display = 'none';
-            }
+        const actionsDiv = document.createElement('div');
+        actionsDiv.className = 'actions';
+        actionsDiv.innerHTML = `
+          <button onclick="likePost(this)">Aplaudir</button>
+          <button onclick="openExpressModal()">Comentar</button>
+          <button onclick="moveToTop(this.parentElement.parentElement)">Mover para o topo</button>
+        `;
+        postDiv.appendChild(actionsDiv);
+
+        feed.insertBefore(postDiv, feed.firstChild);
+        textarea.value = '';
+        document.getElementById('preview-image').style.display = 'none';
+        document.getElementById('post-image').value = '';
+        postBox.style.display = 'none';
+
+        // Iniciar a contagem regressiva para o novo post
+        startCountdown(countdownDiv, postDiv);
+      } else {
+        alert('Digite algo para postar ou adicione uma imagem.');
+      }
+    }
+
+    // Função para iniciar a contagem regressiva
+    function startCountdown(element, postElement) {
+      const endDate = new Date().getTime() + 24 * 3600 * 1000; // 24 horas a partir de agora
+      const interval = setInterval(function() {
+        const now = new Date().getTime();
+        const distance = endDate - now;
+        if (distance < 0) {
+          clearInterval(interval);
+          element.textContent = 'Tempo esgotado';
+          postElement.remove(); // Remove o post quando o tempo acabar
+        } else {
+          const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+          const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+          const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+          element.textContent = `${hours}h ${minutes}m ${seconds}s`;
         }
-    </script>
+      }, 1000);
+    }
+
+    // Função para alternar a caixa de postagem
+    function togglePostBox() {
+      const postBox = document.getElementById('post-box');
+      postBox.style.display = postBox.style.display === 'block' ? 'none' : 'block';
+    }
+
+    // Função para mover um post para o topo
+    function moveToTop(post) {
+      const feed = document.getElementById('feed');
+      feed.insertBefore(post, feed.firstChild);
+    }
+
+    // Função para rolar para o topo da página
+    function scrollToTop() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Função para curtir uma postagem
+    function likePost(button) {
+      button.textContent = button.textContent === 'Aplaudir' ? 'Desaplaudir' : 'Aplaudir';
+    }
+
+    // Mostrar e ocultar o botão "Voltar ao topo"
+    window.onscroll = function() {
+      const backToTopButton = document.getElementById('back-to-top');
+      if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+        backToTopButton.style.display = 'block';
+      } else {
+        backToTopButton.style.display = 'none';
+      }
+    };
+
+    // Atualizar visualização da imagem
+    document.getElementById('post-image').addEventListener('change', function(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const previewImage = document.getElementById('preview-image');
+          previewImage.src = e.target.result;
+          previewImage.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+  </script>
 </body>
 </html>
