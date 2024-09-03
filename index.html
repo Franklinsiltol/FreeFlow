@@ -250,17 +250,7 @@
 
     <!-- Feed -->
     <div id="feed">
-        <!-- Exemplo de uma postagem -->
-        <div class="post">
-            <div class="post-content">Este é um exemplo de postagem.</div>
-            <img src="" alt="Post image" class="post-image">
-            <div class="countdown">Desaparece em: 24h</div>
-            <div class="actions">
-                <button class="like-button"><i class="fas fa-thumbs-up"></i> Curtir</button>
-                <button class="comment-button"><i class="fas fa-comment"></i> Comentar</button>
-                <button class="share-button"><i class="fas fa-share"></i> Compartilhar</button>
-            </div>
-        </div>
+        <!-- As postagens serão adicionadas aqui -->
     </div>
 
     <!-- Modal de Comentários -->
@@ -302,32 +292,105 @@
             element.style.display = 'none';
         }
 
-        // Botão "Voltar ao topo"
-        const backToTopButton = document.getElementById('back-to-top');
-        window.addEventListener('scroll', () => {
-            if (window.scrollY > 300) {
-                showElement(backToTopButton);
-            } else {
-                hideElement(backToTopButton);
-            }
-        });
+        // Salvar postagens no LocalStorage
+        function savePosts() {
+            const posts = Array.from(document.querySelectorAll('.post')).map(post => {
+                const content = post.querySelector('.post-content').textContent;
+                const imageSrc = post.querySelector('.post-image')?.src || '';
+                const countdownText = post.querySelector('.countdown').textContent;
+                return { content, imageSrc, countdownText };
+            });
+            localStorage.setItem('posts', JSON.stringify(posts));
+        }
 
-        backToTopButton.addEventListener('click', () => {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        });
+        function loadPosts() {
+            const posts = JSON.parse(localStorage.getItem('posts') || '[]');
+            const feed = document.getElementById('feed');
+            posts.forEach(post => {
+                const newPost = document.createElement('div');
+                newPost.classList.add('post');
 
-        // Modal de Comentários
-        const commentModal = document.getElementById('comment-modal');
-        const closeModal = document.querySelector('#comment-modal .close');
+                const content = document.createElement('div');
+                content.classList.add('post-content');
+                content.textContent = post.content;
+                newPost.appendChild(content);
 
-        // Botão "Nova postagem"
+                if (post.imageSrc) {
+                    const image = document.createElement('img');
+                    image.classList.add('post-image');
+                    image.src = post.imageSrc;
+                    newPost.appendChild(image);
+                }
+
+                const countdown = document.createElement('div');
+                countdown.classList.add('countdown');
+                countdown.textContent = post.countdownText;
+                newPost.appendChild(countdown);
+
+                const actions = document.createElement('div');
+                actions.classList.add('actions');
+
+                const likeButton = document.createElement('button');
+                likeButton.classList.add('like-button');
+                likeButton.innerHTML = '<i class="fas fa-thumbs-up"></i> Curtir';
+                actions.appendChild(likeButton);
+
+                const commentButton = document.createElement('button');
+                commentButton.classList.add('comment-button');
+                commentButton.innerHTML = '<i class="fas fa-comment"></i> Comentar';
+                actions.appendChild(commentButton);
+
+                const shareButton = document.createElement('button');
+                shareButton.classList.add('share-button');
+                shareButton.innerHTML = '<i class="fas fa-share"></i> Compartilhar';
+                actions.appendChild(shareButton);
+
+                newPost.appendChild(actions);
+                feed.appendChild(newPost);
+
+                // Reinicializa o temporizador de 24h
+                let timeLeft = 86400; // 24 horas em segundos
+                const timer = setInterval(() => {
+                    timeLeft--;
+                    const hours = Math.floor(timeLeft / 3600);
+                    const minutes = Math.floor((timeLeft % 3600) / 60);
+                    const seconds = timeLeft % 60;
+                    countdown.textContent = `Desaparece em: ${hours}h ${minutes}m ${seconds}s`;
+                    if (timeLeft <= 0) {
+                        clearInterval(timer);
+                        newPost.remove();
+                        savePosts(); // Atualiza o armazenamento
+                    }
+                }, 1000);
+
+                // Adiciona funcionalidade aos botões de comentário e compartilhamento
+                commentButton.addEventListener('click', () => {
+                    showElement(commentModal);
+                    document.getElementById('comment-list').innerHTML = ''; // Limpa os comentários existentes
+                    document.getElementById('comment-input').focus(); // Foca no campo de comentário
+                });
+
+                shareButton.addEventListener('click', () => {
+                    feed.insertBefore(newPost, feed.firstChild); // Move o post para o topo
+                    timeLeft = 86400; // Reinicializa o temporizador
+                    savePosts(); // Atualiza o armazenamento
+                });
+            });
+        }
+
+        // Carregar posts ao iniciar
+        document.addEventListener('DOMContentLoaded', loadPosts);
+
+        // Botão de nova postagem
         const newPostButton = document.getElementById('new-post-button');
         const postBox = document.getElementById('post-box');
         newPostButton.addEventListener('click', () => {
             showElement(postBox);
         });
 
-        // Fechar Modal de Comentários
+        // Modal de Comentários
+        const commentModal = document.getElementById('comment-modal');
+        const closeModal = commentModal.querySelector('.close');
         closeModal.addEventListener('click', () => {
             hideElement(commentModal);
         });
@@ -411,6 +474,7 @@
                     if (timeLeft <= 0) {
                         clearInterval(timer);
                         newPost.remove();
+                        savePosts(); // Atualiza o armazenamento
                     }
                 }, 1000);
 
@@ -425,7 +489,11 @@
                 shareButton.addEventListener('click', () => {
                     feed.insertBefore(newPost, feed.firstChild); // Move o post para o topo
                     timeLeft = 86400; // Reinicializa o temporizador
+                    savePosts(); // Atualiza o armazenamento
                 });
+
+                // Salvar posts após adicionar novo post
+                savePosts();
             }
         });
 
@@ -444,6 +512,20 @@
             } else {
                 hideElement(previewImage);
             }
+        });
+
+        // Botão "Voltar ao topo"
+        const backToTopButton = document.getElementById('back-to-top');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 300) {
+                showElement(backToTopButton);
+            } else {
+                hideElement(backToTopButton);
+            }
+        });
+
+        backToTopButton.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         });
     </script>
 </body>
