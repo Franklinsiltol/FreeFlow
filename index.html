@@ -1,512 +1,462 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FreeFlow</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <style>
-    /* Estilos globais */
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-      background-color: #f4f4f4;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feed de Postagens</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Estilos da Página */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
 
-    /* Barra de navegação superior */
-    #navbar {
-      width: 100%;
-      background-color: #fff;
-      padding: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      position: fixed;
-      top: 0;
-      z-index: 1000;
-      border-bottom: 2px solid #ddd;
-    }
+        #navbar {
+            background-color: #000;
+            color: #fff;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-    #navbar .logo {
-      color: #000;
-      font-size: 24px;
-      font-weight: bold;
-    }
+        #navbar .logo {
+            font-size: 24px;
+            font-weight: bold;
+        }
 
-    #navbar .search-bar {
-      flex: 1;
-      margin: 0 20px;
-      position: relative;
-    }
+        #navbar .search-bar input {
+            padding: 5px;
+            border-radius: 4px;
+            border: none;
+            width: 200px;
+        }
 
-    #navbar .search-bar input {
-      width: 100%;
-      padding: 10px;
-      border: 2px solid #000;
-      border-radius: 20px;
-      font-size: 16px;
-      background-color: #fff;
-      color: #000;
-    }
+        #navbar .menu-icons i {
+            margin: 0 10px;
+            cursor: pointer;
+        }
 
-    #navbar .menu-icons {
-      display: flex;
-      align-items: center;
-    }
+        #feed {
+            padding: 20px;
+        }
 
-    #navbar .menu-icons i {
-      font-size: 20px;
-      margin-left: 20px;
-      color: #000;
-      cursor: pointer;
-      transition: color 0.3s;
-    }
+        .post {
+            background-color: #fff;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
 
-    #navbar .menu-icons i:hover {
-      color: #555;
-    }
+        .post-content {
+            margin-bottom: 10px;
+        }
 
-    /* Área do feed */
-    #feed {
-      width: 100%;
-      max-width: 600px;
-      margin-top: 70px;
-    }
+        .post-image {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
 
-    .post {
-      border: 2px solid #ddd;
-      border-radius: 12px;
-      padding: 15px;
-      margin-bottom: 15px;
-      background-color: #fff;
-      position: relative;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
+        .countdown {
+            font-size: 14px;
+            color: #888;
+            margin-bottom: 10px;
+        }
 
-    .post .post-content {
-      margin-bottom: 10px;
-    }
+        .actions button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #007bff;
+            margin-right: 10px;
+            font-size: 16px;
+        }
 
-    .post .post-image {
-      max-width: 100%;
-      margin-bottom: 10px;
-      border-radius: 8px;
-    }
+        #post-box {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            display: none;
+        }
 
-    .post .actions {
-      display: flex;
-      justify-content: space-around;
-      border-top: 1px solid #ddd;
-      padding-top: 5px;
-    }
+        #post-box textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+            resize: none;
+        }
 
-    .post .actions button {
-      background: none;
-      border: none;
-      cursor: pointer;
-      color: #000;
-      font-weight: bold;
-      font-size: 14px;
-      transition: color 0.3s;
-    }
+        #post-box .icon-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
 
-    .post .actions button:hover {
-      color: #555;
-    }
+        #post-box input[type="file"] {
+            display: none;
+        }
 
-    .post .countdown {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      font-size: 12px;
-      color: #888;
-    }
+        #preview-image {
+            max-width: 100%;
+            margin-top: 10px;
+            border-radius: 8px;
+            display: none;
+        }
 
-    /* Modal de Comentários */
-    .modal {
-      display: none;
-      position: fixed;
-      z-index: 1000;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      overflow: auto;
-      background-color: rgba(0, 0, 0, 0.4);
-    }
+        #post-button {
+            width: 100%;
+            padding: 10px;
+            background-color: #000;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
 
-    .modal-content {
-      background-color: #fff;
-      margin: 15% auto;
-      padding: 20px;
-      border: 1px solid #888;
-      width: 90%;
-      max-width: 600px;
-      position: relative;
-      border-radius: 10px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
+        #post-button:hover {
+            background-color: #333;
+        }
 
-    .close {
-      position: absolute;
-      top: 10px;
-      right: 15px;
-      color: #aaa;
-      font-size: 28px;
-      font-weight: bold;
-      cursor: pointer;
-    }
+        /* Botão flutuante de nova postagem */
+        #new-post-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #000;
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
 
-    .close:hover {
-      color: #000;
-    }
+        #new-post-button:hover {
+            background-color: #333;
+        }
 
-    #comment-list {
-      max-height: 300px;
-      overflow-y: auto;
-      margin-bottom: 10px;
-      border: 1px solid #ddd;
-      padding: 10px;
-      border-radius: 8px;
-    }
+        /* Botão "Voltar ao topo" */
+        #back-to-top {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            background-color: #000;
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            display: none;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
 
-    #comment-input {
-      width: 100%;
-      padding: 10px;
-      margin-top: 10px;
-      border: 1px solid #ddd;
-      border-radius: 5px;
-    }
+        #back-to-top:hover {
+            background-color: #333;
+        }
 
-    /* Caixa de postagem */
-    #post-box {
-      display: none;
-      position: fixed;
-      bottom: 80px;
-      right: 20px;
-      width: 90%;
-      max-width: 400px;
-      background-color: #fff;
-      border: 2px solid #000;
-      border-radius: 12px;
-      padding: 15px;
-      z-index: 1000;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
+        /* Modal de Comentários */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.4);
+        }
 
-    #post-box textarea {
-      width: 100%;
-      height: 60px;
-      padding: 10px;
-      margin-bottom: 10px;
-      border: 1px solid #000;
-      border-radius: 8px;
-      font-size: 16px;
-      background-color: #fff;
-      color: #000;
-    }
+        .modal-content {
+            background-color: #fff;
+            margin: 15% auto;
+            padding: 20px;
+            border-radius: 8px;
+            width: 80%;
+            max-width: 600px;
+        }
 
-    #post-box #post-image {
-      display: none;
-    }
+        .modal-content .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
 
-    #post-box #preview-image {
-      display: none;
-      max-width: 100%;
-      margin-bottom: 10px;
-      border-radius: 8px;
-    }
+        .modal-content .close:hover,
+        .modal-content .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
 
-    #post-box .icon-container {
-      display: flex;
-      align-items: center;
-      margin-bottom: 10px;
-    }
+        .modal-content textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+            resize: none;
+        }
 
-    #post-box .icon-container input[type="file"] {
-      display: none;
-    }
+        .modal-content button {
+            width: 100%;
+            padding: 10px;
+            background-color: #000;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
 
-    #post-box .icon-container label {
-      cursor: pointer;
-      font-size: 24px;
-      color: #000;
-      transition: color 0.3s;
-    }
-
-    #post-box .icon-container label:hover {
-      color: #555;
-    }
-
-    #post-box button {
-      background-color: #000;
-      color: #fff;
-      border: none;
-      padding: 10px 15px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 16px;
-      transition: background-color 0.3s;
-    }
-
-    #post-box button:hover {
-      background-color: #555;
-    }
-
-    /* Botão flutuante para nova postagem */
-    #new-post-button {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background-color: #000;
-      color: #fff;
-      border: none;
-      padding: 15px;
-      border-radius: 50%;
-      font-size: 24px;
-      text-align: center;
-      cursor: pointer;
-      z-index: 1000;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-      transition: background-color 0.3s, transform 0.3s;
-    }
-
-    #new-post-button:hover {
-      background-color: #555;
-      transform: scale(1.1);
-    }
-
-    /* Botão "Voltar ao topo" */
-    #back-to-top {
-      display: none;
-      position: fixed;
-      bottom: 80px;
-      right: 20px;
-      background-color: #000;
-      color: #fff;
-      border: none;
-      padding: 10px;
-      border-radius: 50%;
-      font-size: 16px;
-      cursor: pointer;
-      z-index: 1000;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-      transition: background-color 0.3s, transform 0.3s;
-    }
-
-    #back-to-top:hover {
-      background-color: #555;
-      transform: scale(1.1);
-    }
-  </style>
+        .modal-content button:hover {
+            background-color: #333;
+        }
+    </style>
 </head>
+
 <body>
-  <!-- Barra de navegação superior -->
-  <div id="navbar">
-    <div class="logo">FreeFlow</div>
-    <div class="search-bar">
-      <input type="text" placeholder="Buscar...">
+    <!-- Navbar -->
+    <div id="navbar">
+        <div class="logo">FreeFlow</div>
+        <div class="search-bar">
+            <input type="text" placeholder="Pesquisar...">
+        </div>
+        <div class="menu-icons">
+            <i class="fas fa-home"></i>
+            <i class="fas fa-user-friends"></i>
+            <i class="fas fa-bell"></i>
+            <i class="fas fa-cog"></i>
+        </div>
     </div>
-    <div class="menu-icons">
-      <i class="fas fa-user-circle"></i>
-      <i class="fas fa-globe"></i>
-      <i class="fas fa-comments"></i>
+
+    <!-- Feed -->
+    <div id="feed">
+        <!-- Exemplo de uma postagem -->
+        <div class="post">
+            <div class="post-content">Este é um exemplo de postagem.</div>
+            <img src="" alt="Post image" class="post-image">
+            <div class="countdown">Desaparece em: 24h</div>
+            <div class="actions">
+                <button class="like-button"><i class="fas fa-thumbs-up"></i> Curtir</button>
+                <button class="comment-button"><i class="fas fa-comment"></i> Comentar</button>
+                <button class="share-button"><i class="fas fa-share"></i> Compartilhar</button>
+            </div>
+        </div>
     </div>
-  </div>
 
-  <!-- Área do feed -->
-  <div id="feed">
-    <!-- Exemplo de postagem -->
-    <div class="post">
-      <div class="post-content">Este é um exemplo de postagem!</div>
-      <div class="countdown">1h 23m 45s</div>
-      <img src="https://via.placeholder.com/600x400" alt="Imagem do post" class="post-image">
-      <div class="actions">
-        <button onclick="likePost(this)">Aplaudir</button>
-        <button onclick="openExpressModal()">Comentar</button>
-        <button onclick="moveToTop(this.parentElement.parentElement)">Mover para o topo</button>
-      </div>
+    <!-- Modal de Comentários -->
+    <div id="comment-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div id="comment-list">
+                <!-- Comentários serão adicionados aqui -->
+            </div>
+            <textarea id="comment-input" placeholder="Escreva um comentário..."></textarea>
+            <button id="add-comment">Adicionar Comentário</button>
+        </div>
     </div>
-    <!-- Adicione mais postagens aqui -->
-  </div>
 
-  <!-- Caixa de postagem -->
-  <div id="post-box">
-    <textarea placeholder="Escreva sua postagem..."></textarea>
-    <div class="icon-container">
-      <label for="post-image"><i class="fas fa-camera"></i></label>
-      <input type="file" id="post-image" accept="image/*">
-      <img id="preview-image" alt="Imagem de visualização">
+    <!-- Caixa de nova postagem -->
+    <div id="post-box">
+        <textarea id="post-text" placeholder="Escreva algo..."></textarea>
+        <div class="icon-container">
+            <label for="post-image"><i class="fas fa-camera"></i></label>
+            <input type="file" id="post-image">
+        </div>
+        <img id="preview-image" alt="Preview">
+        <button id="post-button">Postar</button>
     </div>
-    <button onclick="postContent()">Postar</button>
-  </div>
 
-  <!-- Botão flutuante para nova postagem -->
-  <button id="new-post-button" onclick="togglePostBox()">+</button>
+    <!-- Botão flutuante de nova postagem -->
+    <button id="new-post-button"><i class="fas fa-plus"></i></button>
 
-  <!-- Botão "Voltar ao topo" -->
-  <button id="back-to-top" onclick="scrollToTop()">↑</button>
+    <!-- Botão "Voltar ao topo" -->
+    <button id="back-to-top"><i class="fas fa-arrow-up"></i></button>
 
-  <!-- Modal de Comentários -->
-  <div id="comment-modal" class="modal">
-    <div class="modal-content">
-      <span class="close" onclick="closeCommentModal()">&times;</span>
-      <h2>Comentários</h2>
-      <div id="comment-list">
-        <!-- Comentários serão adicionados aqui -->
-      </div>
-      <textarea id="comment-input" placeholder="Digite seu comentário..."></textarea>
-      <button id="send-comment-btn" onclick="addComment()">
-        <i class="fas fa-paper-plane"></i> Enviar
-      </button>
-    </div>
-  </div>
-
-  <script>
-    // Função para abrir o modal de comentários
-    function openExpressModal() {
-      document.getElementById('comment-modal').style.display = 'block';
-    }
-
-    // Função para fechar o modal de comentários
-    function closeCommentModal() {
-      document.getElementById('comment-modal').style.display = 'none';
-    }
-
-    // Função para adicionar um comentário
-    function addComment() {
-      const commentInput = document.getElementById('comment-input');
-      const commentList = document.getElementById('comment-list');
-      const commentText = commentInput.value.trim();
-      if (commentText) {
-        const commentElement = document.createElement('div');
-        commentElement.textContent = commentText;
-        commentList.appendChild(commentElement);
-        commentInput.value = '';
-        commentList.scrollTop = commentList.scrollHeight; // Rolagem para o fim da lista
-      }
-    }
-
-    // Função para postar o conteúdo
-    function postContent() {
-      const textarea = document.querySelector('#post-box textarea');
-      const previewImage = document.getElementById('preview-image').src;
-      const postBox = document.getElementById('post-box');
-      const feed = document.getElementById('feed');
-
-      if (textarea.value.trim() || previewImage) {
-        const postDiv = document.createElement('div');
-        postDiv.className = 'post';
-
-        if (textarea.value.trim()) {
-          const postContent = document.createElement('div');
-          postContent.className = 'post-content';
-          postContent.textContent = textarea.value.trim();
-          postDiv.appendChild(postContent);
+    <script>
+        // Funções utilitárias
+        function showElement(element) {
+            element.style.display = 'block';
         }
 
-        if (previewImage) {
-          const postImage = document.createElement('img');
-          postImage.src = previewImage;
-          postImage.className = 'post-image';
-          postDiv.appendChild(postImage);
+        function hideElement(element) {
+            element.style.display = 'none';
         }
 
-        const countdownDiv = document.createElement('div');
-        countdownDiv.className = 'countdown';
-        countdownDiv.textContent = '24h 00m 00s'; // Contagem regressiva inicial de 24 horas
-        postDiv.appendChild(countdownDiv);
+        // Botão "Voltar ao topo"
+        const backToTopButton = document.getElementById('back-to-top');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 300) {
+                showElement(backToTopButton);
+            } else {
+                hideElement(backToTopButton);
+            }
+        });
 
-        const actionsDiv = document.createElement('div');
-        actionsDiv.className = 'actions';
-        actionsDiv.innerHTML = `
-          <button onclick="likePost(this)">Aplaudir</button>
-          <button onclick="openExpressModal()">Comentar</button>
-          <button onclick="moveToTop(this.parentElement.parentElement)">Mover para o topo</button>
-        `;
-        postDiv.appendChild(actionsDiv);
+        backToTopButton.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
 
-        feed.insertBefore(postDiv, feed.firstChild);
-        textarea.value = '';
-        document.getElementById('preview-image').style.display = 'none';
-        document.getElementById('post-image').value = '';
-        postBox.style.display = 'none';
+        // Modal de Comentários
+        const commentModal = document.getElementById('comment-modal');
+        const closeModal = document.querySelector('#comment-modal .close');
 
-        // Iniciar a contagem regressiva para o novo post
-        startCountdown(countdownDiv, postDiv);
-      } else {
-        alert('Digite algo para postar ou adicione uma imagem.');
-      }
-    }
+        // Botão "Nova postagem"
+        const newPostButton = document.getElementById('new-post-button');
+        const postBox = document.getElementById('post-box');
+        newPostButton.addEventListener('click', () => {
+            showElement(postBox);
+        });
 
-    // Função para iniciar a contagem regressiva
-    function startCountdown(element, postElement) {
-      const endDate = new Date().getTime() + 24 * 3600 * 1000; // 24 horas a partir de agora
-      const interval = setInterval(function() {
-        const now = new Date().getTime();
-        const distance = endDate - now;
-        if (distance < 0) {
-          clearInterval(interval);
-          element.textContent = 'Tempo esgotado';
-          postElement.remove(); // Remove o post quando o tempo acabar
-        } else {
-          const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-          const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-          const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-          element.textContent = `${hours}h ${minutes}m ${seconds}s`;
-        }
-      }, 1000);
-    }
+        // Fechar Modal de Comentários
+        closeModal.addEventListener('click', () => {
+            hideElement(commentModal);
+        });
 
-    // Função para alternar a caixa de postagem
-    function togglePostBox() {
-      const postBox = document.getElementById('post-box');
-      postBox.style.display = postBox.style.display === 'block' ? 'none' : 'block';
-    }
+        // Adicionar Comentário
+        const addCommentButton = document.getElementById('add-comment');
+        addCommentButton.addEventListener('click', () => {
+            const commentInput = document.getElementById('comment-input');
+            if (commentInput.value.trim()) {
+                const newComment = document.createElement('p');
+                newComment.textContent = commentInput.value;
+                document.getElementById('comment-list').appendChild(newComment);
+                commentInput.value = '';
+            }
+        });
 
-    // Função para mover um post para o topo
-    function moveToTop(post) {
-      const feed = document.getElementById('feed');
-      feed.insertBefore(post, feed.firstChild);
-    }
+        // Postar
+        const postButton = document.getElementById('post-button');
+        postButton.addEventListener('click', () => {
+            const postText = document.getElementById('post-text').value;
+            const postImage = document.getElementById('post-image').files[0];
+            const previewImage = document.getElementById('preview-image');
+            const feed = document.getElementById('feed');
 
-    // Função para rolar para o topo da página
-    function scrollToTop() {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+            if (postText.trim() || postImage) {
+                const newPost = document.createElement('div');
+                newPost.classList.add('post');
 
-    // Função para curtir uma postagem
-    function likePost(button) {
-      button.textContent = button.textContent === 'Aplaudir' ? 'Desaplaudir' : 'Aplaudir';
-    }
+                const content = document.createElement('div');
+                content.classList.add('post-content');
+                content.textContent = postText;
+                newPost.appendChild(content);
 
-    // Mostrar e ocultar o botão "Voltar ao topo"
-    window.onscroll = function() {
-      const backToTopButton = document.getElementById('back-to-top');
-      if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
-        backToTopButton.style.display = 'block';
-      } else {
-        backToTopButton.style.display = 'none';
-      }
-    };
+                if (postImage) {
+                    const image = document.createElement('img');
+                    image.classList.add('post-image');
+                    image.src = URL.createObjectURL(postImage);
+                    newPost.appendChild(image);
+                }
 
-    // Atualizar visualização da imagem
-    document.getElementById('post-image').addEventListener('change', function(event) {
-      const file = event.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          const previewImage = document.getElementById('preview-image');
-          previewImage.src = e.target.result;
-          previewImage.style.display = 'block';
-        };
-        reader.readAsDataURL(file);
-      }
-    });
-  </script>
+                const countdown = document.createElement('div');
+                countdown.classList.add('countdown');
+                countdown.textContent = 'Desaparece em: 24h';
+                newPost.appendChild(countdown);
+
+                const actions = document.createElement('div');
+                actions.classList.add('actions');
+
+                const likeButton = document.createElement('button');
+                likeButton.classList.add('like-button');
+                likeButton.innerHTML = '<i class="fas fa-thumbs-up"></i> Curtir';
+                actions.appendChild(likeButton);
+
+                const commentButton = document.createElement('button');
+                commentButton.classList.add('comment-button');
+                commentButton.innerHTML = '<i class="fas fa-comment"></i> Comentar';
+                actions.appendChild(commentButton);
+
+                const shareButton = document.createElement('button');
+                shareButton.classList.add('share-button');
+                shareButton.innerHTML = '<i class="fas fa-share"></i> Compartilhar';
+                actions.appendChild(shareButton);
+
+                newPost.appendChild(actions);
+                feed.insertBefore(newPost, feed.firstChild);
+
+                // Limpeza dos campos
+                document.getElementById('post-text').value = '';
+                previewImage.src = '';
+                hideElement(previewImage);
+                hideElement(postBox);
+
+                // Reinicializa o temporizador de 24h
+                let timeLeft = 86400; // 24 horas em segundos
+                const timer = setInterval(() => {
+                    timeLeft--;
+                    const hours = Math.floor(timeLeft / 3600);
+                    const minutes = Math.floor((timeLeft % 3600) / 60);
+                    const seconds = timeLeft % 60;
+                    countdown.textContent = `Desaparece em: ${hours}h ${minutes}m ${seconds}s`;
+                    if (timeLeft <= 0) {
+                        clearInterval(timer);
+                        newPost.remove();
+                    }
+                }, 1000);
+
+                // Adiciona funcionalidade ao novo botão de comentário
+                commentButton.addEventListener('click', () => {
+                    showElement(commentModal);
+                    document.getElementById('comment-list').innerHTML = ''; // Limpa os comentários existentes
+                    document.getElementById('comment-input').focus(); // Foca no campo de comentário
+                });
+
+                // Adiciona funcionalidade ao novo botão de compartilhar
+                shareButton.addEventListener('click', () => {
+                    feed.insertBefore(newPost, feed.firstChild); // Move o post para o topo
+                    timeLeft = 86400; // Reinicializa o temporizador
+                });
+            }
+        });
+
+        // Pré-visualização da imagem
+        const postImageInput = document.getElementById('post-image');
+        postImageInput.addEventListener('change', () => {
+            const file = postImageInput.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    const previewImage = document.getElementById('preview-image');
+                    previewImage.src = reader.result;
+                    showElement(previewImage);
+                };
+                reader.readAsDataURL(file);
+            } else {
+                hideElement(previewImage);
+            }
+        });
+    </script>
 </body>
+
 </html>
+
