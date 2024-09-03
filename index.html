@@ -71,6 +71,10 @@
             font-size: 16px;
         }
 
+        .delete-button {
+            color: #ff0000; /* Cor vermelha para o botão de excluir */
+        }
+
         #post-box {
             position: fixed;
             bottom: 20px;
@@ -81,6 +85,7 @@
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             width: 300px;
             display: none;
+            z-index: 1001; /* Valor superior ao botão flutuante */
         }
 
         #post-box textarea {
@@ -143,6 +148,7 @@
             font-size: 24px;
             cursor: pointer;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 1000; /* Valor inferior ao modal */
         }
 
         #new-post-button:hover {
@@ -177,7 +183,7 @@
         .modal {
             display: none;
             position: fixed;
-            z-index: 1000;
+            z-index: 1002; /* Valor superior ao botão flutuante e ao modal de postagem */
             left: 0;
             top: 0;
             width: 100%;
@@ -345,6 +351,11 @@
                 shareButton.innerHTML = '<i class="fas fa-share"></i> Compartilhar';
                 actions.appendChild(shareButton);
 
+                const deleteButton = document.createElement('button');
+                deleteButton.classList.add('delete-button');
+                deleteButton.innerHTML = '<i class="fas fa-trash"></i> Apagar';
+                actions.appendChild(deleteButton);
+
                 newPost.appendChild(actions);
                 feed.appendChild(newPost);
 
@@ -373,6 +384,12 @@
                 shareButton.addEventListener('click', () => {
                     feed.insertBefore(newPost, feed.firstChild); // Move o post para o topo
                     timeLeft = 86400; // Reinicializa o temporizador
+                    savePosts(); // Atualiza o armazenamento
+                });
+
+                // Adiciona funcionalidade ao botão de excluir
+                deleteButton.addEventListener('click', () => {
+                    newPost.remove();
                     savePosts(); // Atualiza o armazenamento
                 });
             });
@@ -454,6 +471,11 @@
                 shareButton.innerHTML = '<i class="fas fa-share"></i> Compartilhar';
                 actions.appendChild(shareButton);
 
+                const deleteButton = document.createElement('button');
+                deleteButton.classList.add('delete-button');
+                deleteButton.innerHTML = '<i class="fas fa-trash"></i> Apagar';
+                actions.appendChild(deleteButton);
+
                 newPost.appendChild(actions);
                 feed.insertBefore(newPost, feed.firstChild);
 
@@ -489,6 +511,12 @@
                 shareButton.addEventListener('click', () => {
                     feed.insertBefore(newPost, feed.firstChild); // Move o post para o topo
                     timeLeft = 86400; // Reinicializa o temporizador
+                    savePosts(); // Atualiza o armazenamento
+                });
+
+                // Adiciona funcionalidade ao novo botão de excluir
+                deleteButton.addEventListener('click', () => {
+                    newPost.remove();
                     savePosts(); // Atualiza o armazenamento
                 });
 
