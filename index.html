@@ -84,7 +84,7 @@
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             width: 300px;
-            display: none;
+            display: none; /* Começa oculto */
             z-index: 1001; /* Valor superior ao botão flutuante */
         }
 
@@ -239,6 +239,68 @@
         .modal-content button:hover {
             background-color: #333;
         }
+
+        /* Estilos para a tela de login/cadastro */
+        #login-register-modal {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1003;
+        }
+
+        #login-register-modal .modal-content {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            width: 80%;
+            max-width: 400px;
+        }
+
+        #login-register-modal h2 {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        #login-register-modal input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+
+        #login-register-modal button {
+            width: 100%;
+            padding: 10px;
+            background-color: #000;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        #login-register-modal button:hover {
+            background-color: #333;
+        }
+
+        #login-register-modal .toggle-link {
+            text-align: center;
+            cursor: pointer;
+            color: #007bff;
+        }
+
+        #login-register-modal .toggle-link:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 
@@ -266,295 +328,241 @@
             <div id="comment-list">
                 <!-- Comentários serão adicionados aqui -->
             </div>
-            <textarea id="comment-input" placeholder="Escreva um comentário..."></textarea>
-            <button id="add-comment">Adicionar Comentário</button>
+            <textarea id="comment-textarea" placeholder="Adicione um comentário..."></textarea>
+            <button id="submit-comment">Comentar</button>
         </div>
     </div>
 
-    <!-- Caixa de nova postagem -->
+    <!-- Caixa de Nova Postagem -->
     <div id="post-box">
-        <textarea id="post-text" placeholder="Escreva algo..."></textarea>
+        <textarea id="post-content" placeholder="O que você está pensando?"></textarea>
         <div class="icon-container">
-            <label for="post-image"><i class="fas fa-camera"></i></label>
-            <input type="file" id="post-image">
+            <label for="image-upload">
+                <i class="fas fa-camera"></i>
+            </label>
+            <input type="file" id="image-upload" accept="image/*">
         </div>
-        <img id="preview-image" alt="Preview">
-        <button id="post-button">Postar</button>
+        <img id="preview-image" alt="Pré-visualização da Imagem">
+        <button id="post-button">Publicar</button>
     </div>
 
-    <!-- Botão flutuante de nova postagem -->
-    <button id="new-post-button"><i class="fas fa-plus"></i></button>
+    <!-- Botão Flutuante de Nova Postagem -->
+    <button id="new-post-button">+</button>
 
     <!-- Botão "Voltar ao topo" -->
     <button id="back-to-top"><i class="fas fa-arrow-up"></i></button>
 
+    <!-- Modal de Login/Cadastro -->
+    <div id="login-register-modal">
+        <div class="modal-content">
+            <h2 id="modal-title">Login</h2>
+            <input type="text" id="username" placeholder="Usuário">
+            <input type="password" id="password" placeholder="Senha">
+            <button id="login-register-button">Entrar</button>
+            <div class="toggle-link" id="toggle-login-register">Não tem uma conta? Cadastre-se</div>
+        </div>
+    </div>
+
     <script>
-        // Funções utilitárias
-        function showElement(element) {
-            element.style.display = 'block';
+        // IndexedDB setup
+        const request = indexedDB.open('PostDatabase', 1);
+        let db;
+
+        request.onerror = function (event) {
+            console.error('Erro ao abrir o IndexedDB', event);
+        };
+
+        request.onsuccess = function (event) {
+            db = event.target.result;
+            loadPosts(); // Carrega as postagens ao iniciar a página
+        };
+
+        request.onupgradeneeded = function (event) {
+            db = event.target.result;
+            if (!db.objectStoreNames.contains('posts')) {
+                const objectStore = db.createObjectStore('posts', { keyPath: 'id', autoIncrement: true });
+                objectStore.createIndex('content', 'content', { unique: false });
+                objectStore.createIndex('image', 'image', { unique: false });
+            }
+        };
+
+        // Função para adicionar uma postagem
+        function addPost(content, image) {
+            const transaction = db.transaction(['posts'], 'readwrite');
+            const objectStore = transaction.objectStore('posts');
+            const request = objectStore.add({ content, image });
+
+            request.onsuccess = function () {
+                console.log('Postagem adicionada com sucesso!');
+                loadPosts(); // Recarrega as postagens após adicionar uma nova
+            };
+
+            request.onerror = function (event) {
+                console.error('Erro ao adicionar a postagem', event);
+            };
         }
 
-        function hideElement(element) {
-            element.style.display = 'none';
-        }
-
-        // Salvar postagens no LocalStorage
-        function savePosts() {
-            const posts = Array.from(document.querySelectorAll('.post')).map(post => {
-                const content = post.querySelector('.post-content').textContent;
-                const imageSrc = post.querySelector('.post-image')?.src || '';
-                const countdownText = post.querySelector('.countdown').textContent;
-                return { content, imageSrc, countdownText };
-            });
-            localStorage.setItem('posts', JSON.stringify(posts));
-        }
-
+        // Função para carregar as postagens do IndexedDB
         function loadPosts() {
-            const posts = JSON.parse(localStorage.getItem('posts') || '[]');
-            const feed = document.getElementById('feed');
-            posts.forEach(post => {
-                const newPost = document.createElement('div');
-                newPost.classList.add('post');
+            const transaction = db.transaction(['posts'], 'readonly');
+            const objectStore = transaction.objectStore('posts');
+            const request = objectStore.getAll();
 
-                const content = document.createElement('div');
-                content.classList.add('post-content');
-                content.textContent = post.content;
-                newPost.appendChild(content);
+            request.onsuccess = function (event) {
+                const posts = event.target.result;
+                const feed = document.getElementById('feed');
+                feed.innerHTML = ''; // Limpa o feed antes de carregar
 
-                if (post.imageSrc) {
-                    const image = document.createElement('img');
-                    image.classList.add('post-image');
-                    image.src = post.imageSrc;
-                    newPost.appendChild(image);
-                }
+                posts.forEach(post => {
+                    const postElement = document.createElement('div');
+                    postElement.className = 'post';
 
-                const countdown = document.createElement('div');
-                countdown.classList.add('countdown');
-                countdown.textContent = post.countdownText;
-                newPost.appendChild(countdown);
+                    const contentElement = document.createElement('div');
+                    contentElement.className = 'post-content';
+                    contentElement.textContent = post.content;
 
-                const actions = document.createElement('div');
-                actions.classList.add('actions');
+                    postElement.appendChild(contentElement);
 
-                const likeButton = document.createElement('button');
-                likeButton.classList.add('like-button');
-                likeButton.innerHTML = '<i class="fas fa-thumbs-up"></i> Curtir';
-                actions.appendChild(likeButton);
-
-                const commentButton = document.createElement('button');
-                commentButton.classList.add('comment-button');
-                commentButton.innerHTML = '<i class="fas fa-comment"></i> Comentar';
-                actions.appendChild(commentButton);
-
-                const shareButton = document.createElement('button');
-                shareButton.classList.add('share-button');
-                shareButton.innerHTML = '<i class="fas fa-share"></i> Compartilhar';
-                actions.appendChild(shareButton);
-
-                const deleteButton = document.createElement('button');
-                deleteButton.classList.add('delete-button');
-                deleteButton.innerHTML = '<i class="fas fa-trash"></i> Apagar';
-                actions.appendChild(deleteButton);
-
-                newPost.appendChild(actions);
-                feed.appendChild(newPost);
-
-                // Reinicializa o temporizador de 24h
-                let timeLeft = 86400; // 24 horas em segundos
-                const timer = setInterval(() => {
-                    timeLeft--;
-                    const hours = Math.floor(timeLeft / 3600);
-                    const minutes = Math.floor((timeLeft % 3600) / 60);
-                    const seconds = timeLeft % 60;
-                    countdown.textContent = `Desaparece em: ${hours}h ${minutes}m ${seconds}s`;
-                    if (timeLeft <= 0) {
-                        clearInterval(timer);
-                        newPost.remove();
-                        savePosts(); // Atualiza o armazenamento
+                    if (post.image) {
+                        const imageElement = document.createElement('img');
+                        imageElement.className = 'post-image';
+                        imageElement.src = post.image;
+                        postElement.appendChild(imageElement);
                     }
-                }, 1000);
 
-                // Adiciona funcionalidade aos botões de comentário e compartilhamento
-                commentButton.addEventListener('click', () => {
-                    showElement(commentModal);
-                    document.getElementById('comment-list').innerHTML = ''; // Limpa os comentários existentes
-                    document.getElementById('comment-input').focus(); // Foca no campo de comentário
+                    feed.appendChild(postElement);
                 });
+            };
 
-                shareButton.addEventListener('click', () => {
-                    feed.insertBefore(newPost, feed.firstChild); // Move o post para o topo
-                    timeLeft = 86400; // Reinicializa o temporizador
-                    savePosts(); // Atualiza o armazenamento
-                });
-
-                // Adiciona funcionalidade ao botão de excluir
-                deleteButton.addEventListener('click', () => {
-                    newPost.remove();
-                    savePosts(); // Atualiza o armazenamento
-                });
-            });
+            request.onerror = function (event) {
+                console.error('Erro ao carregar as postagens', event);
+            };
         }
 
-        // Carregar posts ao iniciar
-        document.addEventListener('DOMContentLoaded', loadPosts);
-
-        // Botão de nova postagem
-        const newPostButton = document.getElementById('new-post-button');
-        const postBox = document.getElementById('post-box');
-        newPostButton.addEventListener('click', () => {
-            showElement(postBox);
+        // Mostrar e ocultar a caixa de nova postagem
+        document.getElementById('new-post-button').addEventListener('click', function () {
+            const postBox = document.getElementById('post-box');
+            postBox.style.display = postBox.style.display === 'none' || postBox.style.display === '' ? 'block' : 'none';
         });
 
-        // Modal de Comentários
-        const commentModal = document.getElementById('comment-modal');
-        const closeModal = commentModal.querySelector('.close');
-        closeModal.addEventListener('click', () => {
-            hideElement(commentModal);
-        });
-
-        // Adicionar Comentário
-        const addCommentButton = document.getElementById('add-comment');
-        addCommentButton.addEventListener('click', () => {
-            const commentInput = document.getElementById('comment-input');
-            if (commentInput.value.trim()) {
-                const newComment = document.createElement('p');
-                newComment.textContent = commentInput.value;
-                document.getElementById('comment-list').appendChild(newComment);
-                commentInput.value = '';
+        // Fechar a caixa de nova postagem quando o usuário clicar fora dela
+        window.addEventListener('click', function (event) {
+            const postBox = document.getElementById('post-box');
+            if (event.target === postBox) {
+                postBox.style.display = 'none';
             }
         });
 
-        // Postar
-        const postButton = document.getElementById('post-button');
-        postButton.addEventListener('click', () => {
-            const postText = document.getElementById('post-text').value;
-            const postImage = document.getElementById('post-image').files[0];
-            const previewImage = document.getElementById('preview-image');
-            const feed = document.getElementById('feed');
+        // Mostrar a pré-visualização da imagem selecionada
+        document.getElementById('image-upload').addEventListener('change', function (event) {
+            const file = event.target.files[0];
+            const reader = new FileReader();
 
-            if (postText.trim() || postImage) {
-                const newPost = document.createElement('div');
-                newPost.classList.add('post');
+            reader.onload = function (e) {
+                const previewImage = document.getElementById('preview-image');
+                previewImage.src = e.target.result;
+                previewImage.style.display = 'block';
+            };
 
-                const content = document.createElement('div');
-                content.classList.add('post-content');
-                content.textContent = postText;
-                newPost.appendChild(content);
-
-                if (postImage) {
-                    const image = document.createElement('img');
-                    image.classList.add('post-image');
-                    image.src = URL.createObjectURL(postImage);
-                    newPost.appendChild(image);
-                }
-
-                const countdown = document.createElement('div');
-                countdown.classList.add('countdown');
-                countdown.textContent = 'Desaparece em: 24h';
-                newPost.appendChild(countdown);
-
-                const actions = document.createElement('div');
-                actions.classList.add('actions');
-
-                const likeButton = document.createElement('button');
-                likeButton.classList.add('like-button');
-                likeButton.innerHTML = '<i class="fas fa-thumbs-up"></i> Curtir';
-                actions.appendChild(likeButton);
-
-                const commentButton = document.createElement('button');
-                commentButton.classList.add('comment-button');
-                commentButton.innerHTML = '<i class="fas fa-comment"></i> Comentar';
-                actions.appendChild(commentButton);
-
-                const shareButton = document.createElement('button');
-                shareButton.classList.add('share-button');
-                shareButton.innerHTML = '<i class="fas fa-share"></i> Compartilhar';
-                actions.appendChild(shareButton);
-
-                const deleteButton = document.createElement('button');
-                deleteButton.classList.add('delete-button');
-                deleteButton.innerHTML = '<i class="fas fa-trash"></i> Apagar';
-                actions.appendChild(deleteButton);
-
-                newPost.appendChild(actions);
-                feed.insertBefore(newPost, feed.firstChild);
-
-                // Limpeza dos campos
-                document.getElementById('post-text').value = '';
-                previewImage.src = '';
-                hideElement(previewImage);
-                hideElement(postBox);
-
-                // Reinicializa o temporizador de 24h
-                let timeLeft = 86400; // 24 horas em segundos
-                const timer = setInterval(() => {
-                    timeLeft--;
-                    const hours = Math.floor(timeLeft / 3600);
-                    const minutes = Math.floor((timeLeft % 3600) / 60);
-                    const seconds = timeLeft % 60;
-                    countdown.textContent = `Desaparece em: ${hours}h ${minutes}m ${seconds}s`;
-                    if (timeLeft <= 0) {
-                        clearInterval(timer);
-                        newPost.remove();
-                        savePosts(); // Atualiza o armazenamento
-                    }
-                }, 1000);
-
-                // Adiciona funcionalidade ao novo botão de comentário
-                commentButton.addEventListener('click', () => {
-                    showElement(commentModal);
-                    document.getElementById('comment-list').innerHTML = ''; // Limpa os comentários existentes
-                    document.getElementById('comment-input').focus(); // Foca no campo de comentário
-                });
-
-                // Adiciona funcionalidade ao novo botão de compartilhar
-                shareButton.addEventListener('click', () => {
-                    feed.insertBefore(newPost, feed.firstChild); // Move o post para o topo
-                    timeLeft = 86400; // Reinicializa o temporizador
-                    savePosts(); // Atualiza o armazenamento
-                });
-
-                // Adiciona funcionalidade ao novo botão de excluir
-                deleteButton.addEventListener('click', () => {
-                    newPost.remove();
-                    savePosts(); // Atualiza o armazenamento
-                });
-
-                // Salvar posts após adicionar novo post
-                savePosts();
-            }
-        });
-
-        // Pré-visualização da imagem
-        const postImageInput = document.getElementById('post-image');
-        postImageInput.addEventListener('change', () => {
-            const file = postImageInput.files[0];
             if (file) {
-                const reader = new FileReader();
-                reader.onload = () => {
-                    const previewImage = document.getElementById('preview-image');
-                    previewImage.src = reader.result;
-                    showElement(previewImage);
-                };
                 reader.readAsDataURL(file);
-            } else {
-                hideElement(previewImage);
             }
         });
 
-        // Botão "Voltar ao topo"
-        const backToTopButton = document.getElementById('back-to-top');
-        window.addEventListener('scroll', () => {
-            if (window.scrollY > 300) {
-                showElement(backToTopButton);
+        // Publicar uma nova postagem
+        document.getElementById('post-button').addEventListener('click', function () {
+            const content = document.getElementById('post-content').value;
+            const image = document.getElementById('preview-image').src;
+
+            if (content.trim() !== '' || image) {
+                addPost(content, image);
+                document.getElementById('post-content').value = '';
+                document.getElementById('preview-image').style.display = 'none';
+                document.getElementById('preview-image').src = '';
+                document.getElementById('post-box').style.display = 'none';
             } else {
-                hideElement(backToTopButton);
+                alert('Por favor, adicione conteúdo ou uma imagem para postar.');
             }
         });
 
-        backToTopButton.addEventListener('click', () => {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+        // Função para exibir a tela de login/cadastro
+        function showLoginRegisterModal() {
+            document.getElementById('login-register-modal').style.display = 'flex';
+        }
+
+        // Função para esconder a tela de login/cadastro
+        function hideLoginRegisterModal() {
+            document.getElementById('login-register-modal').style.display = 'none';
+        }
+
+        // Verificar se o usuário está logado
+        function checkLoginStatus() {
+            const loggedInUser = localStorage.getItem('loggedInUser');
+            if (loggedInUser) {
+                hideLoginRegisterModal();
+            } else {
+                showLoginRegisterModal();
+            }
+        }
+
+        // Alternar entre login e cadastro
+        document.getElementById('toggle-login-register').addEventListener('click', function () {
+            const modalTitle = document.getElementById('modal-title');
+            const loginRegisterButton = document.getElementById('login-register-button');
+            const toggleLink = document.getElementById('toggle-login-register');
+
+            if (modalTitle.textContent === 'Login') {
+                modalTitle.textContent = 'Cadastro';
+                loginRegisterButton.textContent = 'Cadastrar';
+                toggleLink.textContent = 'Já tem uma conta? Faça login';
+            } else {
+                modalTitle.textContent = 'Login';
+                loginRegisterButton.textContent = 'Entrar';
+                toggleLink.textContent = 'Não tem uma conta? Cadastre-se';
+            }
         });
+
+        // Função para cadastrar um novo usuário
+        function registerUser(username, password) {
+            const users = JSON.parse(localStorage.getItem('users')) || [];
+            const userExists = users.some(user => user.username === username);
+
+            if (userExists) {
+                alert('Nome de usuário já existe. Tente outro.');
+            } else {
+                users.push({ username, password });
+                localStorage.setItem('users', JSON.stringify(users));
+                alert('Usuário cadastrado com sucesso!');
+            }
+        }
+
+        // Função para logar um usuário
+        function loginUser(username, password) {
+            const users = JSON.parse(localStorage.getItem('users')) || [];
+            const user = users.find(user => user.username === username && user.password === password);
+
+            if (user) {
+                localStorage.setItem('loggedInUser', username);
+                hideLoginRegisterModal();
+            } else {
+                alert('Usuário ou senha incorretos.');
+            }
+        }
+
+        // Ação do botão de login/cadastro
+        document.getElementById('login-register-button').addEventListener('click', function () {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            if (document.getElementById('modal-title').textContent === 'Login') {
+                loginUser(username, password);
+            } else {
+                registerUser(username, password);
+            }
+        });
+
+        // Verificação de login ao carregar a página
+        window.onload = checkLoginStatus;
     </script>
 </body>
 
