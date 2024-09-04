@@ -335,26 +335,28 @@
 
     <!-- Caixa de Nova Postagem -->
     <div id="post-box">
-        <textarea id="post-textarea" placeholder="O que você está pensando?"></textarea>
+        <textarea id="post-content" placeholder="O que você está pensando?"></textarea>
         <div class="icon-container">
-            <label for="image-upload" class="icon"><i class="fas fa-image"></i></label>
+            <label for="image-upload">
+                <i class="fas fa-camera"></i>
+            </label>
             <input type="file" id="image-upload" accept="image/*">
         </div>
-        <img id="preview-image" alt="Pré-visualização">
-        <button id="post-button">Postar</button>
+        <img id="preview-image" alt="Pré-visualização da Imagem">
+        <button id="post-button">Publicar</button>
     </div>
 
     <!-- Botão Flutuante de Nova Postagem -->
-    <button id="new-post-button"><i class="fas fa-plus"></i></button>
+    <button id="new-post-button">+</button>
 
-    <!-- Botão "Voltar ao Topo" -->
+    <!-- Botão "Voltar ao topo" -->
     <button id="back-to-top"><i class="fas fa-arrow-up"></i></button>
 
     <!-- Modal de Login/Cadastro -->
-    <div id="login-register-modal" class="modal">
+    <div id="login-register-modal">
         <div class="modal-content">
             <h2 id="modal-title">Login</h2>
-            <input type="text" id="username" placeholder="Nome de usuário">
+            <input type="text" id="username" placeholder="Usuário">
             <input type="password" id="password" placeholder="Senha">
             <button id="login-register-button">Entrar</button>
             <div class="toggle-link" id="toggle-login-register">Não tem uma conta? Cadastre-se</div>
@@ -362,222 +364,205 @@
     </div>
 
     <script>
+        // IndexedDB setup
+        const request = indexedDB.open('PostDatabase', 1);
         let db;
 
-        // Inicializa o IndexedDB
-        function initDB() {
-            const request = indexedDB.open('userDB', 1);
+        request.onerror = function (event) {
+            console.error('Erro ao abrir o IndexedDB', event);
+        };
 
-            request.onupgradeneeded = function (event) {
-                db = event.target.result;
-                if (!db.objectStoreNames.contains('users')) {
-                    db.createObjectStore('users', { keyPath: 'username' });
-                }
-            };
+        request.onsuccess = function (event) {
+            db = event.target.result;
+            loadPosts(); // Carrega as postagens ao iniciar a página
+        };
 
-            request.onsuccess = function (event) {
-                db = event.target.result;
+        request.onupgradeneeded = function (event) {
+            db = event.target.result;
+            if (!db.objectStoreNames.contains('posts')) {
+                const objectStore = db.createObjectStore('posts', { keyPath: 'id', autoIncrement: true });
+                objectStore.createIndex('content', 'content', { unique: false });
+                objectStore.createIndex('image', 'image', { unique: false });
+            }
+        };
+
+        // Função para adicionar uma postagem
+        function addPost(content, image) {
+            const transaction = db.transaction(['posts'], 'readwrite');
+            const objectStore = transaction.objectStore('posts');
+            const request = objectStore.add({ content, image });
+
+            request.onsuccess = function () {
+                console.log('Postagem adicionada com sucesso!');
+                loadPosts(); // Recarrega as postagens após adicionar uma nova
             };
 
             request.onerror = function (event) {
-                console.error('Erro ao abrir IndexedDB', event);
+                console.error('Erro ao adicionar a postagem', event);
             };
         }
 
-        initDB();
+        // Função para carregar as postagens do IndexedDB
+        function loadPosts() {
+            const transaction = db.transaction(['posts'], 'readonly');
+            const objectStore = transaction.objectStore('posts');
+            const request = objectStore.getAll();
+
+            request.onsuccess = function (event) {
+                const posts = event.target.result;
+                const feed = document.getElementById('feed');
+                feed.innerHTML = ''; // Limpa o feed antes de carregar
+
+                posts.forEach(post => {
+                    const postElement = document.createElement('div');
+                    postElement.className = 'post';
+
+                    const contentElement = document.createElement('div');
+                    contentElement.className = 'post-content';
+                    contentElement.textContent = post.content;
+
+                    postElement.appendChild(contentElement);
+
+                    if (post.image) {
+                        const imageElement = document.createElement('img');
+                        imageElement.className = 'post-image';
+                        imageElement.src = post.image;
+                        postElement.appendChild(imageElement);
+                    }
+
+                    feed.appendChild(postElement);
+                });
+            };
+
+            request.onerror = function (event) {
+                console.error('Erro ao carregar as postagens', event);
+            };
+        }
+
+        // Mostrar e ocultar a caixa de nova postagem
+        document.getElementById('new-post-button').addEventListener('click', function () {
+            const postBox = document.getElementById('post-box');
+            postBox.style.display = postBox.style.display === 'none' || postBox.style.display === '' ? 'block' : 'none';
+        });
+
+        // Fechar a caixa de nova postagem quando o usuário clicar fora dela
+        window.addEventListener('click', function (event) {
+            const postBox = document.getElementById('post-box');
+            if (event.target === postBox) {
+                postBox.style.display = 'none';
+            }
+        });
+
+        // Mostrar a pré-visualização da imagem selecionada
+        document.getElementById('image-upload').addEventListener('change', function (event) {
+            const file = event.target.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function (e) {
+                const previewImage = document.getElementById('preview-image');
+                previewImage.src = e.target.result;
+                previewImage.style.display = 'block';
+            };
+
+            if (file) {
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Publicar uma nova postagem
+        document.getElementById('post-button').addEventListener('click', function () {
+            const content = document.getElementById('post-content').value;
+            const image = document.getElementById('preview-image').src;
+
+            if (content.trim() !== '' || image) {
+                addPost(content, image);
+                document.getElementById('post-content').value = '';
+                document.getElementById('preview-image').style.display = 'none';
+                document.getElementById('preview-image').src = '';
+                document.getElementById('post-box').style.display = 'none';
+            } else {
+                alert('Por favor, adicione conteúdo ou uma imagem para postar.');
+            }
+        });
+
+        // Função para exibir a tela de login/cadastro
+        function showLoginRegisterModal() {
+            document.getElementById('login-register-modal').style.display = 'flex';
+        }
+
+        // Função para esconder a tela de login/cadastro
+        function hideLoginRegisterModal() {
+            document.getElementById('login-register-modal').style.display = 'none';
+        }
+
+        // Verificar se o usuário está logado
+        function checkLoginStatus() {
+            const loggedInUser = localStorage.getItem('loggedInUser');
+            if (loggedInUser) {
+                hideLoginRegisterModal();
+            } else {
+                showLoginRegisterModal();
+            }
+        }
+
+        // Alternar entre login e cadastro
+        document.getElementById('toggle-login-register').addEventListener('click', function () {
+            const modalTitle = document.getElementById('modal-title');
+            const loginRegisterButton = document.getElementById('login-register-button');
+            const toggleLink = document.getElementById('toggle-login-register');
+
+            if (modalTitle.textContent === 'Login') {
+                modalTitle.textContent = 'Cadastro';
+                loginRegisterButton.textContent = 'Cadastrar';
+                toggleLink.textContent = 'Já tem uma conta? Faça login';
+            } else {
+                modalTitle.textContent = 'Login';
+                loginRegisterButton.textContent = 'Entrar';
+                toggleLink.textContent = 'Não tem uma conta? Cadastre-se';
+            }
+        });
 
         // Função para cadastrar um novo usuário
         function registerUser(username, password) {
-            const transaction = db.transaction('users', 'readwrite');
-            const objectStore = transaction.objectStore('users');
-            const request = objectStore.get(username);
+            const users = JSON.parse(localStorage.getItem('users')) || [];
+            const userExists = users.some(user => user.username === username);
 
-            request.onsuccess = function () {
-                if (request.result) {
-                    alert('Nome de usuário já existe. Tente outro.');
-                } else {
-                    const addUserRequest = objectStore.add({ username, password });
-                    addUserRequest.onsuccess = function () {
-                        alert('Usuário cadastrado com sucesso!');
-                        document.getElementById('modal-title').textContent = 'Login';
-                        document.getElementById('login-register-button').textContent = 'Entrar';
-                        document.getElementById('toggle-login-register').textContent = 'Não tem uma conta? Cadastre-se';
-                        document.getElementById('username').value = '';
-                        document.getElementById('password').value = '';
-                    };
-                    addUserRequest.onerror = function (event) {
-                        console.error('Erro ao cadastrar usuário', event);
-                        alert('Erro ao cadastrar usuário.');
-                    };
-                }
-            };
-            request.onerror = function (event) {
-                console.error('Erro ao verificar usuário', event);
-            };
+            if (userExists) {
+                alert('Nome de usuário já existe. Tente outro.');
+            } else {
+                users.push({ username, password });
+                localStorage.setItem('users', JSON.stringify(users));
+                alert('Usuário cadastrado com sucesso!');
+            }
         }
 
-        // Função para fazer login
+        // Função para logar um usuário
         function loginUser(username, password) {
-            const transaction = db.transaction('users', 'readonly');
-            const objectStore = transaction.objectStore('users');
-            const request = objectStore.get(username);
+            const users = JSON.parse(localStorage.getItem('users')) || [];
+            const user = users.find(user => user.username === username && user.password === password);
 
-            request.onsuccess = function () {
-                if (request.result && request.result.password === password) {
-                    alert('Login bem-sucedido!');
-                    // Aqui você pode redirecionar o usuário ou atualizar a interface como desejar
-                } else {
-                    alert('Usuário ou senha inválidos.');
-                }
-            };
-
-            request.onerror = function (event) {
-                console.error('Erro ao fazer login', event);
-            };
+            if (user) {
+                localStorage.setItem('loggedInUser', username);
+                hideLoginRegisterModal();
+            } else {
+                alert('Usuário ou senha incorretos.');
+            }
         }
 
-        // Login/Cadastro ao clicar no botão
+        // Ação do botão de login/cadastro
         document.getElementById('login-register-button').addEventListener('click', function () {
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
-            const modalTitle = document.getElementById('modal-title').textContent;
 
-            if (username.trim() === '' || password.trim() === '') {
-                alert('Preencha todos os campos.');
-                return;
-            }
-
-            if (modalTitle === 'Cadastro') {
-                registerUser(username, password);
-            } else if (modalTitle === 'Login') {
+            if (document.getElementById('modal-title').textContent === 'Login') {
                 loginUser(username, password);
-            }
-        });
-
-        // Alternar entre Login e Cadastro
-        document.getElementById('toggle-login-register').addEventListener('click', function () {
-            const modalTitle = document.getElementById('modal-title').textContent;
-            if (modalTitle === 'Login') {
-                document.getElementById('modal-title').textContent = 'Cadastro';
-                document.getElementById('login-register-button').textContent = 'Cadastrar';
-                document.getElementById('toggle-login-register').textContent = 'Já tem uma conta? Faça login';
             } else {
-                document.getElementById('modal-title').textContent = 'Login';
-                document.getElementById('login-register-button').textContent = 'Entrar';
-                document.getElementById('toggle-login-register').textContent = 'Não tem uma conta? Cadastre-se';
+                registerUser(username, password);
             }
         });
 
-        // Mostrar o modal de login/cadastro ao carregar a página
-        document.addEventListener('DOMContentLoaded', function () {
-            const modal = document.getElementById('login-register-modal');
-            modal.style.display = 'block';
-        });
-
-        // Fechar o modal ao clicar no fundo
-        window.addEventListener('click', function (event) {
-            const modal = document.getElementById('login-register-modal');
-            if (event.target === modal) {
-                modal.style.display = 'none';
-            }
-        });
-
-        // Mostrar e esconder a caixa de nova postagem
-        document.getElementById('new-post-button').addEventListener('click', function () {
-            const postBox = document.getElementById('post-box');
-            postBox.style.display = postBox.style.display === 'none' ? 'block' : 'none';
-        });
-
-        // Mostrar o botão "Voltar ao topo" quando rolar para baixo
-        window.addEventListener('scroll', function () {
-            const backToTopButton = document.getElementById('back-to-top');
-            if (window.scrollY > 200) {
-                backToTopButton.style.display = 'block';
-            } else {
-                backToTopButton.style.display = 'none';
-            }
-        });
-
-        // Voltar ao topo ao clicar no botão
-        document.getElementById('back-to-top').addEventListener('click', function () {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        });
-
-        // Adicionar uma nova postagem
-        document.getElementById('post-button').addEventListener('click', function () {
-            const postText = document.getElementById('post-textarea').value;
-            const imageFile = document.getElementById('image-upload').files[0];
-            const previewImage = document.getElementById('preview-image');
-
-            if (postText.trim() === '' && !imageFile) {
-                alert('Por favor, adicione um texto ou uma imagem.');
-                return;
-            }
-
-            const post = document.createElement('div');
-            post.className = 'post';
-            post.innerHTML = `<div class="post-content">${postText}</div>`;
-            if (imageFile) {
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    const img = document.createElement('img');
-                    img.src = e.target.result;
-                    img.className = 'post-image';
-                    post.appendChild(img);
-                };
-                reader.readAsDataURL(imageFile);
-            }
-            document.getElementById('feed').prepend(post);
-
-            document.getElementById('post-box').style.display = 'none';
-            document.getElementById('post-textarea').value = '';
-            document.getElementById('image-upload').value = '';
-            previewImage.style.display = 'none';
-        });
-
-        // Exibir imagem pré-visualizada
-        document.getElementById('image-upload').addEventListener('change', function () {
-            const file = this.files[0];
-            const previewImage = document.getElementById('preview-image');
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    previewImage.src = e.target.result;
-                    previewImage.style.display = 'block';
-                };
-                reader.readAsDataURL(file);
-            } else {
-                previewImage.style.display = 'none';
-            }
-        });
-
-        // Adicionar um comentário
-        document.getElementById('submit-comment').addEventListener('click', function () {
-            const commentText = document.getElementById('comment-textarea').value;
-            if (commentText.trim() === '') {
-                alert('Digite um comentário.');
-                return;
-            }
-
-            const comment = document.createElement('div');
-            comment.className = 'comment';
-            comment.textContent = commentText;
-            document.getElementById('comment-list').appendChild(comment);
-            document.getElementById('comment-textarea').value = '';
-        });
-
-        // Abrir modal de comentários
-        document.querySelectorAll('.post').forEach(post => {
-            post.addEventListener('click', function () {
-                const commentModal = document.getElementById('comment-modal');
-                commentModal.style.display = 'block';
-            });
-        });
-
-        // Fechar o modal de comentários ao clicar no botão de fechar
-        document.querySelector('#comment-modal .close').addEventListener('click', function () {
-            document.getElementById('comment-modal').style.display = 'none';
-        });
+        // Verificação de login ao carregar a página
+        window.onload = checkLoginStatus;
     </script>
 </body>
 
