@@ -56,12 +56,6 @@
             margin-bottom: 10px;
         }
 
-        .countdown {
-            font-size: 14px;
-            color: #888;
-            margin-bottom: 10px;
-        }
-
         .actions button {
             background: none;
             border: none;
@@ -72,7 +66,7 @@
         }
 
         .delete-button {
-            color: #ff0000; /* Cor vermelha para o botão de excluir */
+            color: #ff0000;
         }
 
         #post-box {
@@ -84,8 +78,8 @@
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             width: 300px;
-            display: none; /* Começa oculto */
-            z-index: 1001; /* Valor superior ao botão flutuante */
+            display: none;
+            z-index: 1001;
         }
 
         #post-box textarea {
@@ -131,7 +125,6 @@
             background-color: #333;
         }
 
-        /* Botão flutuante de nova postagem */
         #new-post-button {
             position: fixed;
             bottom: 20px;
@@ -148,158 +141,15 @@
             font-size: 24px;
             cursor: pointer;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            z-index: 1000; /* Valor inferior ao modal */
+            z-index: 1000;
         }
 
         #new-post-button:hover {
             background-color: #333;
         }
 
-        /* Botão "Voltar ao topo" */
-        #back-to-top {
-            position: fixed;
-            bottom: 80px;
-            right: 20px;
-            background-color: #000;
-            color: #fff;
-            border: none;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            cursor: pointer;
-            display: none;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        #back-to-top:hover {
-            background-color: #333;
-        }
-
-        /* Modal de Comentários */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1002; /* Valor superior ao botão flutuante e ao modal de postagem */
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0, 0, 0, 0.4);
-        }
-
-        .modal-content {
-            background-color: #fff;
-            margin: 15% auto;
-            padding: 20px;
-            border-radius: 8px;
-            width: 80%;
-            max-width: 600px;
-        }
-
-        .modal-content .close {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-        }
-
-        .modal-content .close:hover,
-        .modal-content .close:focus {
-            color: black;
-            text-decoration: none;
-            cursor: pointer;
-        }
-
-        .modal-content textarea {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            box-sizing: border-box;
-            resize: none;
-        }
-
-        .modal-content button {
-            width: 100%;
-            padding: 10px;
-            background-color: #000;
-            color: #fff;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        .modal-content button:hover {
-            background-color: #333;
-        }
-
-        /* Estilos para a tela de login/cadastro */
-        #login-register-modal {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            z-index: 1003;
-        }
-
-        #login-register-modal .modal-content {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            width: 80%;
-            max-width: 400px;
-        }
-
-        #login-register-modal h2 {
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        #login-register-modal input {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 10px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            box-sizing: border-box;
-        }
-
-        #login-register-modal button {
-            width: 100%;
-            padding: 10px;
-            background-color: #000;
-            color: #fff;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-
-        #login-register-modal button:hover {
-            background-color: #333;
-        }
-
-        #login-register-modal .toggle-link {
-            text-align: center;
-            cursor: pointer;
-            color: #007bff;
-        }
-
-        #login-register-modal .toggle-link:hover {
-            text-decoration: underline;
+        .delete-button {
+            color: #ff0000;
         }
     </style>
 </head>
@@ -321,18 +171,6 @@
         <!-- As postagens serão adicionadas aqui -->
     </div>
 
-    <!-- Modal de Comentários -->
-    <div id="comment-modal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <div id="comment-list">
-                <!-- Comentários serão adicionados aqui -->
-            </div>
-            <textarea id="comment-textarea" placeholder="Adicione um comentário..."></textarea>
-            <button id="submit-comment">Comentar</button>
-        </div>
-    </div>
-
     <!-- Caixa de Nova Postagem -->
     <div id="post-box">
         <textarea id="post-content" placeholder="O que você está pensando?"></textarea>
@@ -348,20 +186,6 @@
 
     <!-- Botão Flutuante de Nova Postagem -->
     <button id="new-post-button">+</button>
-
-    <!-- Botão "Voltar ao topo" -->
-    <button id="back-to-top"><i class="fas fa-arrow-up"></i></button>
-
-    <!-- Modal de Login/Cadastro -->
-    <div id="login-register-modal">
-        <div class="modal-content">
-            <h2 id="modal-title">Login</h2>
-            <input type="text" id="username" placeholder="Usuário">
-            <input type="password" id="password" placeholder="Senha">
-            <button id="login-register-button">Entrar</button>
-            <div class="toggle-link" id="toggle-login-register">Não tem uma conta? Cadastre-se</div>
-        </div>
-    </div>
 
     <script>
         // IndexedDB setup
@@ -411,24 +235,38 @@
             request.onsuccess = function (event) {
                 const posts = event.target.result;
                 const feed = document.getElementById('feed');
-                feed.innerHTML = ''; // Limpa o feed antes de carregar
+                feed.innerHTML = ''; // Limpa o feed antes de carregar novamente
 
-                posts.forEach(post => {
+                // Inverter a ordem dos posts para mostrar o mais recente no topo
+                posts.reverse().forEach(post => {
                     const postElement = document.createElement('div');
-                    postElement.className = 'post';
+                    postElement.classList.add('post');
 
-                    const contentElement = document.createElement('div');
-                    contentElement.className = 'post-content';
-                    contentElement.textContent = post.content;
-
-                    postElement.appendChild(contentElement);
-
+                    let postContent = '';
                     if (post.image) {
-                        const imageElement = document.createElement('img');
-                        imageElement.className = 'post-image';
-                        imageElement.src = post.image;
-                        postElement.appendChild(imageElement);
+                        postContent += `<img src="${post.image}" alt="Post Image" class="post-image">`;
                     }
+                    postContent += `<div class="post-content">${post.content}</div>`;
+
+                    postElement.innerHTML = `
+                        ${postContent}
+                        <div class="actions">
+                            <button class="applause-button">Aplaudir</button>
+                            <button class="comment-button">Comentar</button>
+                            <button class="move-top-button">Mover para o topo</button>
+                            <button class="delete-button">Excluir</button>
+                        </div>
+                    `;
+
+                    // Função para mover o post para o topo
+                    postElement.querySelector('.move-top-button').addEventListener('click', function () {
+                        feed.prepend(postElement); // Move o post para o início do feed
+                    });
+
+                    // Função para excluir o post
+                    postElement.querySelector('.delete-button').addEventListener('click', function () {
+                        deletePost(post.id); // Chama a função para excluir do IndexedDB
+                    });
 
                     feed.appendChild(postElement);
                 });
@@ -439,130 +277,56 @@
             };
         }
 
+        // Função para excluir uma postagem
+        function deletePost(id) {
+            const transaction = db.transaction(['posts'], 'readwrite');
+            const objectStore = transaction.objectStore('posts');
+            const request = objectStore.delete(id);
+
+            request.onsuccess = function () {
+                console.log('Postagem excluída com sucesso!');
+                loadPosts(); // Recarrega as postagens após excluir
+            };
+
+            request.onerror = function (event) {
+                console.error('Erro ao excluir a postagem', event);
+            };
+        }
+
         // Mostrar e ocultar a caixa de nova postagem
         document.getElementById('new-post-button').addEventListener('click', function () {
             const postBox = document.getElementById('post-box');
             postBox.style.display = postBox.style.display === 'none' || postBox.style.display === '' ? 'block' : 'none';
         });
 
-        // Fechar a caixa de nova postagem quando o usuário clicar fora dela
-        window.addEventListener('click', function (event) {
-            const postBox = document.getElementById('post-box');
-            if (event.target === postBox) {
-                postBox.style.display = 'none';
-            }
-        });
-
-        // Mostrar a pré-visualização da imagem selecionada
+        // Pré-visualização da imagem antes do upload
         document.getElementById('image-upload').addEventListener('change', function (event) {
             const file = event.target.files[0];
-            const reader = new FileReader();
-
-            reader.onload = function (e) {
-                const previewImage = document.getElementById('preview-image');
-                previewImage.src = e.target.result;
-                previewImage.style.display = 'block';
-            };
-
             if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const previewImage = document.getElementById('preview-image');
+                    previewImage.src = e.target.result;
+                    previewImage.style.display = 'block';
+                };
                 reader.readAsDataURL(file);
             }
         });
 
-        // Publicar uma nova postagem
+        // Adicionar uma nova postagem
         document.getElementById('post-button').addEventListener('click', function () {
             const content = document.getElementById('post-content').value;
-            const image = document.getElementById('preview-image').src;
+            const image = document.getElementById('preview-image').src || null;
 
-            if (content.trim() !== '' || image) {
+            if (content || image) {
                 addPost(content, image);
-                document.getElementById('post-content').value = '';
-                document.getElementById('preview-image').style.display = 'none';
-                document.getElementById('preview-image').src = '';
-                document.getElementById('post-box').style.display = 'none';
+                document.getElementById('post-content').value = ''; // Limpa o conteúdo após publicar
+                document.getElementById('preview-image').style.display = 'none'; // Oculta a pré-visualização da imagem
+                document.getElementById('post-box').style.display = 'none'; // Oculta a caixa de postagem
             } else {
-                alert('Por favor, adicione conteúdo ou uma imagem para postar.');
+                alert('Por favor, adicione um texto ou uma imagem!');
             }
         });
-
-        // Função para exibir a tela de login/cadastro
-        function showLoginRegisterModal() {
-            document.getElementById('login-register-modal').style.display = 'flex';
-        }
-
-        // Função para esconder a tela de login/cadastro
-        function hideLoginRegisterModal() {
-            document.getElementById('login-register-modal').style.display = 'none';
-        }
-
-        // Verificar se o usuário está logado
-        function checkLoginStatus() {
-            const loggedInUser = localStorage.getItem('loggedInUser');
-            if (loggedInUser) {
-                hideLoginRegisterModal();
-            } else {
-                showLoginRegisterModal();
-            }
-        }
-
-        // Alternar entre login e cadastro
-        document.getElementById('toggle-login-register').addEventListener('click', function () {
-            const modalTitle = document.getElementById('modal-title');
-            const loginRegisterButton = document.getElementById('login-register-button');
-            const toggleLink = document.getElementById('toggle-login-register');
-
-            if (modalTitle.textContent === 'Login') {
-                modalTitle.textContent = 'Cadastro';
-                loginRegisterButton.textContent = 'Cadastrar';
-                toggleLink.textContent = 'Já tem uma conta? Faça login';
-            } else {
-                modalTitle.textContent = 'Login';
-                loginRegisterButton.textContent = 'Entrar';
-                toggleLink.textContent = 'Não tem uma conta? Cadastre-se';
-            }
-        });
-
-        // Função para cadastrar um novo usuário
-        function registerUser(username, password) {
-            const users = JSON.parse(localStorage.getItem('users')) || [];
-            const userExists = users.some(user => user.username === username);
-
-            if (userExists) {
-                alert('Nome de usuário já existe. Tente outro.');
-            } else {
-                users.push({ username, password });
-                localStorage.setItem('users', JSON.stringify(users));
-                alert('Usuário cadastrado com sucesso!');
-            }
-        }
-
-        // Função para logar um usuário
-        function loginUser(username, password) {
-            const users = JSON.parse(localStorage.getItem('users')) || [];
-            const user = users.find(user => user.username === username && user.password === password);
-
-            if (user) {
-                localStorage.setItem('loggedInUser', username);
-                hideLoginRegisterModal();
-            } else {
-                alert('Usuário ou senha incorretos.');
-            }
-        }
-
-        // Ação do botão de login/cadastro
-        document.getElementById('login-register-button').addEventListener('click', function () {
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-
-            if (document.getElementById('modal-title').textContent === 'Login') {
-                loginUser(username, password);
-            } else {
-                registerUser(username, password);
-            }
-        });
-
-        // Verificação de login ao carregar a página
-        window.onload = checkLoginStatus;
     </script>
 </body>
 
