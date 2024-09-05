@@ -321,7 +321,7 @@
 
     <!-- Botão "Voltar ao Topo" -->
     <button class="back-to-top" onclick="scrollToTop()">
-        <i class="fas fa-chevron-up"></i>
+        <i class="fas fa-arrow-up"></i>
     </button>
 
     <div class="footer">
@@ -329,19 +329,16 @@
     </div>
 
     <script>
-        // Configuração do IndexedDB
-        const dbName = 'freeFlowDB';
-        const storeName = 'posts';
-        let db;
+        var db;
+        var storeName = 'posts';
 
         function openDatabase() {
-            const request = indexedDB.open(dbName, 1);
+            var request = indexedDB.open('FreeFlowDB', 1);
 
             request.onupgradeneeded = function(event) {
-                db = event.target.result;
-                if (!db.objectStoreNames.contains(storeName)) {
-                    db.createObjectStore(storeName, { keyPath: 'id', autoIncrement: true });
-                }
+                var db = event.target.result;
+                var objectStore = db.createObjectStore(storeName, { keyPath: 'id', autoIncrement: true });
+                objectStore.createIndex('timestamp', 'timestamp', { unique: false });
             };
 
             request.onsuccess = function(event) {
@@ -382,6 +379,14 @@
             };
         }
 
+        function convertImageToBase64(file, callback) {
+            var reader = new FileReader();
+            reader.onload = function(event) {
+                callback(event.target.result);
+            };
+            reader.readAsDataURL(file);
+        }
+
         function addPost() {
             var postContent = document.getElementById('postContent').value;
             var postImage = document.getElementById('postImage').files[0];
@@ -393,10 +398,21 @@
 
             var post = {
                 content: postContent,
-                image: postImage ? URL.createObjectURL(postImage) : null,
+                image: null,
                 timestamp: new Date().toISOString()
             };
 
+            if (postImage) {
+                convertImageToBase64(postImage, function(base64Image) {
+                    post.image = base64Image;
+                    savePost(post);
+                });
+            } else {
+                savePost(post);
+            }
+        }
+
+        function savePost(post) {
             var postFeed = document.getElementById('postFeed');
 
             var postDiv = document.createElement('div');
@@ -510,6 +526,15 @@
 
         document.addEventListener('DOMContentLoaded', function() {
             openDatabase();
+        });
+
+        window.addEventListener('scroll', function() {
+            var backToTopButton = document.querySelector('.back-to-top');
+            if (window.scrollY > 200) {
+                backToTopButton.style.display = 'block';
+            } else {
+                backToTopButton.style.display = 'none';
+            }
         });
     </script>
 </body>
