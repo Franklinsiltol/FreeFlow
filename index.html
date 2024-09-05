@@ -56,17 +56,22 @@
             margin-bottom: 10px;
         }
 
-        .actions button {
-            background: none;
-            border: none;
+        .actions i {
+            margin-right: 15px;
             cursor: pointer;
+            color: #333;
+        }
+
+        .actions i:hover {
             color: #007bff;
-            margin-right: 10px;
-            font-size: 16px;
         }
 
         .delete-button {
             color: #ff0000;
+        }
+
+        .delete-button:hover {
+            color: #ff6666;
         }
 
         #post-box {
@@ -251,10 +256,10 @@
                     postElement.innerHTML = `
                         ${postContent}
                         <div class="actions">
-                            <button class="applause-button">Aplaudir</button>
-                            <button class="comment-button">Comentar</button>
-                            <button class="move-top-button">Mover para o topo</button>
-                            <button class="delete-button">Excluir</button>
+                            <i class="fas fa-thumbs-up applause-button"></i>
+                            <i class="fas fa-comment comment-button"></i>
+                            <i class="fas fa-arrow-up move-top-button"></i>
+                            <i class="fas fa-trash delete-button"></i>
                         </div>
                     `;
 
