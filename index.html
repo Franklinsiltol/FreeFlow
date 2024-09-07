@@ -1,152 +1,315 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simple Social Network</title>
+    <title>Feed de Postagens</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
+        /* Estilos da Página */
         body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
             background-color: #f4f4f4;
         }
-        h1 {
-            background-color: #333;
+
+        #navbar {
+            background-color: #000;
             color: #fff;
             padding: 10px;
-            text-align: center;
-            margin: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-        #posts {
+
+        #navbar .logo {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        #navbar .menu-icons i {
+            margin: 0 10px;
+            cursor: pointer;
+        }
+
+        #feed {
             padding: 20px;
         }
+
         .post {
-            background: #fff;
-            border-radius: 5px;
+            background-color: #fff;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .post-content {
             margin-bottom: 10px;
-            padding: 10px;
-            max-width: 600px;
-            margin: 10px auto;
         }
-        .post strong {
-            display: block;
-            margin-bottom: 5px;
+
+        .post-image {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-bottom: 10px;
         }
-        #login, #register {
-            max-width: 600px;
-            margin: 20px auto;
+
+        .actions i {
+            margin-right: 15px;
+            cursor: pointer;
+            color: #333;
+        }
+
+        .actions i:hover {
+            color: #007bff;
+        }
+
+        .delete-button {
+            color: #ff0000;
+        }
+
+        .delete-button:hover {
+            color: #ff6666;
+        }
+
+        #post-box {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #fff;
             padding: 20px;
-            background: #fff;
-            border-radius: 5px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            display: none;
+            z-index: 1001;
         }
-        input {
+
+        #post-box textarea {
             width: 100%;
             padding: 10px;
-            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+            resize: none;
         }
-        button {
+
+        #post-box .icon-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        #post-box input[type="file"] {
+            display: none;
+        }
+
+        #preview-image {
+            max-width: 100%;
+            margin-top: 10px;
+            border-radius: 8px;
+            display: none;
+        }
+
+        #post-button {
+            width: 100%;
             padding: 10px;
-            background: #333;
+            background-color: #000;
             color: #fff;
             border: none;
+            border-radius: 8px;
             cursor: pointer;
+            font-weight: bold;
+        }
+
+        #post-button:hover {
+            background-color: #333;
+        }
+
+        #new-post-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #000;
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+
+        #new-post-button:hover {
+            background-color: #333;
+        }
+
+        .delete-button {
+            color: #ff0000;
         }
     </style>
 </head>
+
 <body>
-    <h1>Simple Social Network</h1>
-    <div id="login">
-        <h2>Login</h2>
-        <input type="text" id="login-username" placeholder="Username">
-        <input type="password" id="login-password" placeholder="Password">
-        <button onclick="login()">Login</button>
+    <!-- Navbar -->
+    <div id="navbar">
+        <div class="logo">FreeFlow</div>
+        <div class="menu-icons">
+            <i class="fas fa-home"></i>
+            <i class="fas fa-user-friends"></i>
+            <i class="fas fa-bell"></i>
+            <i class="fas fa-cog"></i>
+        </div>
     </div>
-    <div id="register">
-        <h2>Register</h2>
-        <input type="text" id="register-username" placeholder="Username">
-        <input type="password" id="register-password" placeholder="Password">
-        <button onclick="register()">Register</button>
+
+    <!-- Feed -->
+    <div id="feed">
+        <!-- As postagens serão adicionadas aqui -->
     </div>
-    <div id="posts"></div>
+
+    <!-- Caixa de Nova Postagem -->
+    <div id="post-box">
+        <textarea id="post-content" placeholder="O que você está pensando?"></textarea>
+        <div class="icon-container">
+            <label for="image-upload">
+                <i class="fas fa-camera"></i>
+            </label>
+            <input type="file" id="image-upload" accept="image/*">
+        </div>
+        <img id="preview-image" alt="Pré-visualização da Imagem">
+        <button id="post-button">Publicar</button>
+    </div>
+
+    <!-- Botão Flutuante de Nova Postagem -->
+    <button id="new-post-button">+</button>
+
+    <!-- Socket.IO Script -->
     <script src="/socket.io/socket.io.js"></script>
     <script>
-        const socket = io('http://localhost:3000');
-        let token = '';
+        const socket = io();
 
-        function formatTimestamp(timestamp) {
-            const date = new Date(timestamp);
-            return date.toLocaleString();
-        }
-
-        function renderPosts(posts) {
-            const postsContainer = document.getElementById('posts');
-            postsContainer.innerHTML = '';
-            posts.forEach(post => {
-                const postElement = document.createElement('div');
-                postElement.className = 'post';
-                postElement.innerHTML = `<strong>${post.user}:</strong> ${post.message} <br><small>${formatTimestamp(post.timestamp)}</small>`;
-                postsContainer.appendChild(postElement);
-            });
-        }
-
-        function login() {
-            fetch('http://localhost:3000/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    username: document.getElementById('login-username').value,
-                    password: document.getElementById('login-password').value
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                token = data.token;
-                document.getElementById('login').style.display = 'none';
-                document.getElementById('register').style.display = 'none';
-                socket.emit('getPosts');
-            });
-        }
-
-        function register() {
-            fetch('http://localhost:3000/register', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    username: document.getElementById('register-username').value,
-                    password: document.getElementById('register-password').value
-                })
-            })
-            .then(response => response.json())
-            .then(() => alert('User registered!'));
-        }
-
-        function postMessage(user, message) {
-            fetch('http://localhost:3000/posts', {
+        // Função para adicionar uma postagem
+        function addPost(content, imageUrl) {
+            fetch('/posts', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': token
                 },
-                body: JSON.stringify({ user, message })
-            });
+                body: JSON.stringify({ content, imageUrl }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Postagem adicionada com sucesso!', data);
+                loadPosts(); // Recarrega as postagens após adicionar uma nova
+                socket.emit('new-post', data); // Notifica outros clientes sobre a nova postagem
+            })
+            .catch(error => console.error('Erro ao adicionar a postagem', error));
         }
 
-        socket.on('posts', (posts) => {
-            renderPosts(posts);
+        // Função para carregar as postagens do backend
+        function loadPosts() {
+            fetch('/posts')
+                .then(response => response.json())
+                .then(posts => {
+                    const feed = document.getElementById('feed');
+                    feed.innerHTML = ''; // Limpa o feed antes de carregar novamente
+
+                    posts.forEach(post => {
+                        const postElement = document.createElement('div');
+                        postElement.classList.add('post');
+
+                        let postContent = '';
+                        if (post.image) {
+                            postContent += `<img src="${post.image}" alt="Post Image" class="post-image">`;
+                        }
+                        postContent += `<div class="post-content">${post.content}</div>`;
+
+                        postElement.innerHTML = `
+                            ${postContent}
+                            <div class="actions">
+                                <i class="fas fa-thumbs-up applause-button"></i>
+                                <i class="fas fa-comment comment-button"></i>
+                                <i class="fas fa-arrow-up move-top-button"></i>
+                                <i class="fas fa-trash delete-button"></i>
+                            </div>
+                        `;
+
+                        // Função para mover o post para o topo
+                        postElement.querySelector('.move-top-button').addEventListener('click', function () {
+                            feed.prepend(postElement); // Move o post para o início do feed
+                        });
+
+                        // Função para excluir o post
+                        postElement.querySelector('.delete-button').addEventListener('click', function () {
+                            deletePost(post.id); // Chama a função para excluir do backend
+                        });
+
+                        feed.appendChild(postElement);
+                    });
+                })
+                .catch(error => console.error('Erro ao carregar as postagens', error));
+        }
+
+        // Função para excluir uma postagem
+        function deletePost(id) {
+            fetch(`/posts/${id}`, {
+                method: 'DELETE',
+            })
+            .then(() => {
+                console.log('Postagem excluída com sucesso!');
+                loadPosts(); // Recarrega as postagens após excluir
+            })
+            .catch(error => console.error('Erro ao excluir a postagem', error));
+        }
+
+        // Função para lidar com o upload da imagem
+        document.getElementById('image-upload').addEventListener('change', function (event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    document.getElementById('preview-image').src = e.target.result;
+                    document.getElementById('preview-image').style.display = 'block';
+                }
+                reader.readAsDataURL(file);
+            }
         });
 
-        socket.on('newPost', (post) => {
-            renderPosts([post, ...document.querySelectorAll('.post').map(p => p.innerHTML)]);
+        // Função para publicar o post
+        document.getElementById('post-button').addEventListener('click', function () {
+            const content = document.getElementById('post-content').value;
+            const imageUrl = document.getElementById('preview-image').src;
+            addPost(content, imageUrl);
+            document.getElementById('post-content').value = '';
+            document.getElementById('preview-image').style.display = 'none';
+            document.getElementById('image-upload').value = '';
         });
 
-        socket.emit('getPosts');
+        // Função para mostrar/ocultar a caixa de postagem
+        document.getElementById('new-post-button').addEventListener('click', function () {
+            const postBox = document.getElementById('post-box');
+            postBox.style.display = postBox.style.display === 'block' ? 'none' : 'block';
+        });
+
+        // Recebe atualizações de postagens via Socket.IO
+        socket.on('new-post', function (post) {
+            loadPosts(); // Recarrega as postagens quando uma nova postagem é recebida
+        });
+
+        // Inicializa o feed ao carregar a página
+        window.onload = function () {
+            loadPosts();
+        };
     </script>
 </body>
+
 </html>
