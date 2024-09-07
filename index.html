@@ -192,123 +192,146 @@
     <!-- Botão Flutuante de Nova Postagem -->
     <button id="new-post-button">+</button>
 
-    <!-- Socket.IO Script -->
-    <script src="/socket.io/socket.io.js"></script>
     <script>
-        const socket = io();
+        // IndexedDB setup
+        const request = indexedDB.open('PostDatabase', 1);
+        let db;
+
+        request.onerror = function (event) {
+            console.error('Erro ao abrir o IndexedDB', event);
+        };
+
+        request.onsuccess = function (event) {
+            db = event.target.result;
+            loadPosts(); // Carrega as postagens ao iniciar a página
+        };
+
+        request.onupgradeneeded = function (event) {
+            db = event.target.result;
+            if (!db.objectStoreNames.contains('posts')) {
+                const objectStore = db.createObjectStore('posts', { keyPath: 'id', autoIncrement: true });
+                objectStore.createIndex('content', 'content', { unique: false });
+                objectStore.createIndex('image', 'image', { unique: false });
+            }
+        };
 
         // Função para adicionar uma postagem
-        function addPost(content, imageUrl) {
-            fetch('/posts', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ content, imageUrl }),
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Postagem adicionada com sucesso!', data);
+        function addPost(content, image) {
+            const transaction = db.transaction(['posts'], 'readwrite');
+            const objectStore = transaction.objectStore('posts');
+            const request = objectStore.add({ content, image });
+
+            request.onsuccess = function () {
+                console.log('Postagem adicionada com sucesso!');
                 loadPosts(); // Recarrega as postagens após adicionar uma nova
-                socket.emit('new-post', data); // Notifica outros clientes sobre a nova postagem
-            })
-            .catch(error => console.error('Erro ao adicionar a postagem', error));
+            };
+
+            request.onerror = function (event) {
+                console.error('Erro ao adicionar a postagem', event);
+            };
         }
 
-        // Função para carregar as postagens do backend
+        // Função para carregar as postagens do IndexedDB
         function loadPosts() {
-            fetch('/posts')
-                .then(response => response.json())
-                .then(posts => {
-                    const feed = document.getElementById('feed');
-                    feed.innerHTML = ''; // Limpa o feed antes de carregar novamente
+            const transaction = db.transaction(['posts'], 'readonly');
+            const objectStore = transaction.objectStore('posts');
+            const request = objectStore.getAll();
 
-                    posts.forEach(post => {
-                        const postElement = document.createElement('div');
-                        postElement.classList.add('post');
+            request.onsuccess = function (event) {
+                const posts = event.target.result;
+                const feed = document.getElementById('feed');
+                feed.innerHTML = ''; // Limpa o feed antes de carregar novamente
 
-                        let postContent = '';
-                        if (post.image) {
-                            postContent += `<img src="${post.image}" alt="Post Image" class="post-image">`;
-                        }
-                        postContent += `<div class="post-content">${post.content}</div>`;
+                // Inverter a ordem dos posts para mostrar o mais recente no topo
+                posts.reverse().forEach(post => {
+                    const postElement = document.createElement('div');
+                    postElement.classList.add('post');
 
-                        postElement.innerHTML = `
-                            ${postContent}
-                            <div class="actions">
-                                <i class="fas fa-thumbs-up applause-button"></i>
-                                <i class="fas fa-comment comment-button"></i>
-                                <i class="fas fa-arrow-up move-top-button"></i>
-                                <i class="fas fa-trash delete-button"></i>
-                            </div>
-                        `;
+                    let postContent = '';
+                    if (post.image) {
+                        postContent += `<img src="${post.image}" alt="Post Image" class="post-image">`;
+                    }
+                    postContent += `<div class="post-content">${post.content}</div>`;
 
-                        // Função para mover o post para o topo
-                        postElement.querySelector('.move-top-button').addEventListener('click', function () {
-                            feed.prepend(postElement); // Move o post para o início do feed
-                        });
+                    postElement.innerHTML = `
+                        ${postContent}
+                        <div class="actions">
+                            <i class="fas fa-thumbs-up applause-button"></i>
+                            <i class="fas fa-comment comment-button"></i>
+                            <i class="fas fa-arrow-up move-top-button"></i>
+                            <i class="fas fa-trash delete-button"></i>
+                        </div>
+                    `;
 
-                        // Função para excluir o post
-                        postElement.querySelector('.delete-button').addEventListener('click', function () {
-                            deletePost(post.id); // Chama a função para excluir do backend
-                        });
-
-                        feed.appendChild(postElement);
+                    // Função para mover o post para o topo
+                    postElement.querySelector('.move-top-button').addEventListener('click', function () {
+                        feed.prepend(postElement); // Move o post para o início do feed
                     });
-                })
-                .catch(error => console.error('Erro ao carregar as postagens', error));
+
+                    // Função para excluir o post
+                    postElement.querySelector('.delete-button').addEventListener('click', function () {
+                        deletePost(post.id); // Chama a função para excluir do IndexedDB
+                    });
+
+                    feed.appendChild(postElement);
+                });
+            };
+
+            request.onerror = function (event) {
+                console.error('Erro ao carregar as postagens', event);
+            };
         }
 
         // Função para excluir uma postagem
         function deletePost(id) {
-            fetch(`/posts/${id}`, {
-                method: 'DELETE',
-            })
-            .then(() => {
+            const transaction = db.transaction(['posts'], 'readwrite');
+            const objectStore = transaction.objectStore('posts');
+            const request = objectStore.delete(id);
+
+            request.onsuccess = function () {
                 console.log('Postagem excluída com sucesso!');
                 loadPosts(); // Recarrega as postagens após excluir
-            })
-            .catch(error => console.error('Erro ao excluir a postagem', error));
+            };
+
+            request.onerror = function (event) {
+                console.error('Erro ao excluir a postagem', event);
+            };
         }
 
-        // Função para lidar com o upload da imagem
+        // Mostrar e ocultar a caixa de nova postagem
+        document.getElementById('new-post-button').addEventListener('click', function () {
+            const postBox = document.getElementById('post-box');
+            postBox.style.display = postBox.style.display === 'none' || postBox.style.display === '' ? 'block' : 'none';
+        });
+
+        // Pré-visualização da imagem antes do upload
         document.getElementById('image-upload').addEventListener('change', function (event) {
             const file = event.target.files[0];
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function (e) {
-                    document.getElementById('preview-image').src = e.target.result;
-                    document.getElementById('preview-image').style.display = 'block';
-                }
+                    const previewImage = document.getElementById('preview-image');
+                    previewImage.src = e.target.result;
+                    previewImage.style.display = 'block';
+                };
                 reader.readAsDataURL(file);
             }
         });
 
-        // Função para publicar o post
+        // Adicionar uma nova postagem
         document.getElementById('post-button').addEventListener('click', function () {
             const content = document.getElementById('post-content').value;
-            const imageUrl = document.getElementById('preview-image').src;
-            addPost(content, imageUrl);
-            document.getElementById('post-content').value = '';
-            document.getElementById('preview-image').style.display = 'none';
-            document.getElementById('image-upload').value = '';
-        });
+            const image = document.getElementById('preview-image').src || null;
 
-        // Função para mostrar/ocultar a caixa de postagem
-        document.getElementById('new-post-button').addEventListener('click', function () {
-            const postBox = document.getElementById('post-box');
-            postBox.style.display = postBox.style.display === 'block' ? 'none' : 'block';
+            if (content || image) {
+                addPost(content, image);
+                document.getElementById('post-content').value = ''; // Limpa o conteúdo após publicar
+                document.getElementById('preview-image').style.display = 'none'; // Oculta a pré-visualização da imagem
+                document.getElementById('post-box').style.display = 'none'; // Oculta a caixa de postagem
+            } else {
+                alert('Por favor, adicione um texto ou uma imagem!');
+            }
         });
-
-        // Recebe atualizações de postagens via Socket.IO
-        socket.on('new-post', function (post) {
-            loadPosts(); // Recarrega as postagens quando uma nova postagem é recebida
-        });
-
-        // Inicializa o feed ao carregar a página
-        window.onload = function () {
-            loadPosts();
-        };
     </script>
 </body>
 
