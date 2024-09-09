@@ -1,338 +1,126 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
-
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Feed de Postagens</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>Site com CMS no Modal</title>
     <style>
-        /* Estilos da Página */
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f4;
-        }
-
-        #navbar {
-            background-color: #000;
-            color: #fff;
-            padding: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        #navbar .logo {
-            font-size: 24px;
-            font-weight: bold;
-        }
-
-        #navbar .menu-icons i {
-            margin: 0 10px;
-            cursor: pointer;
-        }
-
-        #feed {
-            padding: 20px;
-        }
-
-        .post {
-            background-color: #fff;
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .post-content {
-            margin-bottom: 10px;
-        }
-
-        .post-image {
-            max-width: 100%;
-            border-radius: 8px;
-            margin-bottom: 10px;
-        }
-
-        .actions i {
-            margin-right: 15px;
-            cursor: pointer;
-            color: #333;
-        }
-
-        .actions i:hover {
-            color: #007bff;
-        }
-
-        .delete-button {
-            color: #ff0000;
-        }
-
-        .delete-button:hover {
-            color: #ff6666;
-        }
-
-        #post-box {
+        /* Estilos básicos para o modal */
+        #cmsModal {
+            display: none;
             position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            width: 300px;
-            display: none;
-            z-index: 1001;
-        }
-
-        #post-box textarea {
+            z-index: 1;
+            left: 0;
+            top: 0;
             width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            box-sizing: border-box;
-            resize: none;
-        }
-
-        #post-box .icon-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-
-        #post-box input[type="file"] {
-            display: none;
-        }
-
-        #preview-image {
-            max-width: 100%;
-            margin-top: 10px;
-            border-radius: 8px;
-            display: none;
-        }
-
-        #post-button {
-            width: 100%;
-            padding: 10px;
-            background-color: #000;
-            color: #fff;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        #post-button:hover {
-            background-color: #333;
-        }
-
-        #new-post-button {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background-color: #000;
-            color: #fff;
-            border: none;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            display: flex;
-            align-items: center;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
             justify-content: center;
-            font-size: 24px;
+            align-items: center;
+        }
+
+        #cmsModalContent {
+            background-color: white;
+            width: 90%;
+            height: 90%;
+            padding: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        #closeModal {
+            float: right;
+            margin-top: -10px;
             cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            z-index: 1000;
+            font-size: 20px;
         }
 
-        #new-post-button:hover {
-            background-color: #333;
+        /* Estilos para o botão de abrir o modal */
+        #openCms {
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
         }
 
-        .delete-button {
-            color: #ff0000;
+        #openCms:hover {
+            background-color: #218838;
         }
     </style>
 </head>
-
 <body>
-    <!-- Navbar -->
-    <div id="navbar">
-        <div class="logo">FreeFlow</div>
-        <div class="menu-icons">
-            <i class="fas fa-home"></i>
-            <i class="fas fa-user-friends"></i>
-            <i class="fas fa-bell"></i>
-            <i class="fas fa-cog"></i>
-        </div>
+
+<h1>Bem-vindo ao site!</h1>
+<p>Este é um exemplo de como você pode abrir o Netlify CMS em um modal.</p>
+
+<!-- Botão para abrir o modal -->
+<button id="openCms">Abrir CMS</button>
+
+<!-- Modal que contém o CMS -->
+<div id="cmsModal">
+    <div id="cmsModalContent">
+        <span id="closeModal">&times;</span>
+        <!-- CMS será carregado dentro do modal aqui -->
+        <script src="https://unpkg.com/netlify-cms@^2.0.0/dist/netlify-cms.js"></script>
     </div>
+</div>
 
-    <!-- Feed -->
-    <div id="feed">
-        <!-- As postagens serão adicionadas aqui -->
-    </div>
+<script>
+    // Função para abrir o modal
+    document.getElementById('openCms').onclick = function() {
+        document.getElementById('cmsModal').style.display = 'flex';
+    };
 
-    <!-- Caixa de Nova Postagem -->
-    <div id="post-box">
-        <textarea id="post-content" placeholder="O que você está pensando?"></textarea>
-        <div class="icon-container">
-            <label for="image-upload">
-                <i class="fas fa-camera"></i>
-            </label>
-            <input type="file" id="image-upload" accept="image/*">
-        </div>
-        <img id="preview-image" alt="Pré-visualização da Imagem">
-        <button id="post-button">Publicar</button>
-    </div>
+    // Função para fechar o modal
+    document.getElementById('closeModal').onclick = function() {
+        document.getElementById('cmsModal').style.display = 'none';
+    };
 
-    <!-- Botão Flutuante de Nova Postagem -->
-    <button id="new-post-button">+</button>
-
-    <script>
-        // IndexedDB setup
-        const request = indexedDB.open('PostDatabase', 1);
-        let db;
-
-        request.onerror = function (event) {
-            console.error('Erro ao abrir o IndexedDB', event);
-        };
-
-        request.onsuccess = function (event) {
-            db = event.target.result;
-            loadPosts(); // Carrega as postagens ao iniciar a página
-        };
-
-        request.onupgradeneeded = function (event) {
-            db = event.target.result;
-            if (!db.objectStoreNames.contains('posts')) {
-                const objectStore = db.createObjectStore('posts', { keyPath: 'id', autoIncrement: true });
-                objectStore.createIndex('content', 'content', { unique: false });
-                objectStore.createIndex('image', 'image', { unique: false });
-            }
-        };
-
-        // Função para adicionar uma postagem
-        function addPost(content, image) {
-            const transaction = db.transaction(['posts'], 'readwrite');
-            const objectStore = transaction.objectStore('posts');
-            const request = objectStore.add({ content, image });
-
-            request.onsuccess = function () {
-                console.log('Postagem adicionada com sucesso!');
-                loadPosts(); // Recarrega as postagens após adicionar uma nova
-            };
-
-            request.onerror = function (event) {
-                console.error('Erro ao adicionar a postagem', event);
-            };
+    // Fecha o modal se o usuário clicar fora do conteúdo
+    window.onclick = function(event) {
+        if (event.target == document.getElementById('cmsModal')) {
+            document.getElementById('cmsModal').style.display = 'none';
         }
+    };
+</script>
 
-        // Função para carregar as postagens do IndexedDB
-        function loadPosts() {
-            const transaction = db.transaction(['posts'], 'readonly');
-            const objectStore = transaction.objectStore('posts');
-            const request = objectStore.getAll();
+<!-- Configuração do Netlify CMS -->
+<script>
+    window.CMS_MANUAL_INIT = true;
 
-            request.onsuccess = function (event) {
-                const posts = event.target.result;
-                const feed = document.getElementById('feed');
-                feed.innerHTML = ''; // Limpa o feed antes de carregar novamente
-
-                // Inverter a ordem dos posts para mostrar o mais recente no topo
-                posts.reverse().forEach(post => {
-                    const postElement = document.createElement('div');
-                    postElement.classList.add('post');
-
-                    let postContent = '';
-                    if (post.image) {
-                        postContent += `<img src="${post.image}" alt="Post Image" class="post-image">`;
-                    }
-                    postContent += `<div class="post-content">${post.content}</div>`;
-
-                    postElement.innerHTML = `
-                        ${postContent}
-                        <div class="actions">
-                            <i class="fas fa-thumbs-up applause-button"></i>
-                            <i class="fas fa-comment comment-button"></i>
-                            <i class="fas fa-arrow-up move-top-button"></i>
-                            <i class="fas fa-trash delete-button"></i>
-                        </div>
-                    `;
-
-                    // Função para mover o post para o topo
-                    postElement.querySelector('.move-top-button').addEventListener('click', function () {
-                        feed.prepend(postElement); // Move o post para o início do feed
-                    });
-
-                    // Função para excluir o post
-                    postElement.querySelector('.delete-button').addEventListener('click', function () {
-                        deletePost(post.id); // Chama a função para excluir do IndexedDB
-                    });
-
-                    feed.appendChild(postElement);
-                });
-            };
-
-            request.onerror = function (event) {
-                console.error('Erro ao carregar as postagens', event);
-            };
+    CMS.init({
+        config: {
+            backend: {
+                name: 'github',
+                repo: 'seu-usuario/seu-repositorio',  // Substitua por seu usuário e repositório GitHub
+                branch: 'main', // A branch onde o site está hospedado
+            },
+            media_folder: "images/uploads", // Onde os arquivos de mídia vão ser armazenados
+            public_folder: "/images/uploads", // Onde os arquivos serão acessados publicamente
+            collections: [
+                {
+                    name: "posts",
+                    label: "Posts",
+                    folder: "_posts",
+                    create: true,
+                    slug: "{{year}}-{{month}}-{{day}}-{{slug}}",
+                    fields: [
+                        { label: "Título", name: "title", widget: "string" },
+                        { label: "Conteúdo", name: "body", widget: "markdown" }
+                    ]
+                }
+            ]
         }
+    });
 
-        // Função para excluir uma postagem
-        function deletePost(id) {
-            const transaction = db.transaction(['posts'], 'readwrite');
-            const objectStore = transaction.objectStore('posts');
-            const request = objectStore.delete(id);
+    // Iniciar o CMS manualmente no modal
+    document.getElementById('openCms').onclick = function() {
+        document.getElementById('cmsModal').style.display = 'flex';
+        CMS.init();
+    };
+</script>
 
-            request.onsuccess = function () {
-                console.log('Postagem excluída com sucesso!');
-                loadPosts(); // Recarrega as postagens após excluir
-            };
-
-            request.onerror = function (event) {
-                console.error('Erro ao excluir a postagem', event);
-            };
-        }
-
-        // Mostrar e ocultar a caixa de nova postagem
-        document.getElementById('new-post-button').addEventListener('click', function () {
-            const postBox = document.getElementById('post-box');
-            postBox.style.display = postBox.style.display === 'none' || postBox.style.display === '' ? 'block' : 'none';
-        });
-
-        // Pré-visualização da imagem antes do upload
-        document.getElementById('image-upload').addEventListener('change', function (event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    const previewImage = document.getElementById('preview-image');
-                    previewImage.src = e.target.result;
-                    previewImage.style.display = 'block';
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-
-        // Adicionar uma nova postagem
-        document.getElementById('post-button').addEventListener('click', function () {
-            const content = document.getElementById('post-content').value;
-            const image = document.getElementById('preview-image').src || null;
-
-            if (content || image) {
-                addPost(content, image);
-                document.getElementById('post-content').value = ''; // Limpa o conteúdo após publicar
-                document.getElementById('preview-image').style.display = 'none'; // Oculta a pré-visualização da imagem
-                document.getElementById('post-box').style.display = 'none'; // Oculta a caixa de postagem
-            } else {
-                alert('Por favor, adicione um texto ou uma imagem!');
-            }
-        });
-    </script>
 </body>
-
 </html>
